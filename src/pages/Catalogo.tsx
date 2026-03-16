@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import GateLogo from "@/components/GateLogo";
 
@@ -28,7 +28,14 @@ const catalogItems = [
 
 const Catalogo = () => {
   const [active, setActive] = useState("Todos");
-  const filtered = active === "Todos" ? catalogItems : catalogItems.filter((i) => i.category === active);
+  const [search, setSearch] = useState("");
+  const filtered = catalogItems
+    .filter((i) => active === "Todos" || i.category === active)
+    .filter((i) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return i.name.toLowerCase().includes(q) || i.description.toLowerCase().includes(q) || i.category.toLowerCase().includes(q);
+    });
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,6 +70,20 @@ const Catalogo = () => {
           </p>
         </ScrollReveal>
 
+        {/* Search */}
+        <ScrollReveal delay={50}>
+          <div className="relative max-w-md mx-auto mb-8">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar productos..."
+              className="w-full bg-card border border-border rounded-lg pl-12 pr-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+            />
+          </div>
+        </ScrollReveal>
+
         {/* Category filters */}
         <ScrollReveal delay={100}>
           <div className="flex flex-wrap justify-center gap-3 mb-12">
@@ -83,6 +104,11 @@ const Catalogo = () => {
         </ScrollReveal>
 
         {/* Product grid */}
+        {filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="font-body text-muted-foreground text-lg">No se encontraron productos para "{search}"</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filtered.map((item, i) => (
             <ScrollReveal key={item.name} delay={i * 80}>
@@ -106,6 +132,7 @@ const Catalogo = () => {
             </ScrollReveal>
           ))}
         </div>
+        )}
 
         {/* CTA */}
         <ScrollReveal delay={200}>
