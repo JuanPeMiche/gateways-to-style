@@ -19,12 +19,12 @@ const HeroSection = () => (
         Remeras, tazas, portarretratos y más — diseños únicos con envíos a todo Uruguay
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <a
-          href="#productos"
+        <Link
+          to="/catalogo"
           className="px-8 py-4 bg-primary text-primary-foreground font-body font-bold text-lg uppercase tracking-wider hover:bg-secondary transition-all duration-200 glow-border border border-primary"
         >
           Ver productos
-        </a>
+        </Link>
         <a
           href="#contacto"
           className="px-8 py-4 border border-primary/50 text-foreground font-body font-bold text-lg uppercase tracking-wider hover:border-secondary hover:text-secondary transition-all duration-200"
