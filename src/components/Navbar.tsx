@@ -37,14 +37,14 @@ const Navbar = () => {
             <a
               key={link.href}
               href={link.href}
-              className="font-body text-sm font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="font-body text-sm font-semibold uppercase tracking-wider text-muted-foreground hover:text-secondary transition-colors duration-200"
             >
               {link.label}
             </a>
           ))}
           <Link
             to="/catalogo"
-            className="ml-2 px-5 py-2 bg-primary text-primary-foreground font-body font-bold text-sm uppercase tracking-wider border border-primary hover:bg-secondary transition-all duration-200 glow-border"
+            className="ml-2 px-5 py-2 bg-primary text-primary-foreground font-body font-bold text-sm uppercase tracking-wider border border-primary hover:bg-primary/80 transition-all duration-200 glow-border"
           >
             Ver catálogo
           </Link>
@@ -68,7 +68,7 @@ const Navbar = () => {
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="block py-3 font-body text-lg font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+              className="block py-3 font-body text-lg font-semibold uppercase tracking-wider text-muted-foreground hover:text-secondary transition-colors"
             >
               {link.label}
             </a>

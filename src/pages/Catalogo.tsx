@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Settings } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import GateLogo from "@/components/GateLogo";
 
 import productRemeras from "@/assets/product-remeras.jpg";
 import productTazas from "@/assets/product-tazas.jpg";
@@ -34,19 +35,18 @@ const Catalogo = () => {
       {/* Header */}
       <div className="border-b border-primary/30 bg-background/80 backdrop-blur-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body font-semibold uppercase tracking-wider text-sm">
+          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-secondary transition-colors font-body font-semibold uppercase tracking-wider text-sm">
             <ArrowLeft size={18} />
             Volver
           </Link>
-          <Link to="/" className="flex items-center gap-2">
-            <Settings className="w-7 h-7 text-primary" />
-            <span className="font-display text-2xl tracking-widest text-foreground">GATE</span>
+          <Link to="/">
+            <GateLogo />
           </Link>
           <a
             href="https://wa.me/59892365380"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-primary text-primary-foreground font-body font-bold text-xs uppercase tracking-wider border border-primary hover:bg-secondary transition-all duration-200"
+            className="px-4 py-2 bg-primary text-primary-foreground font-body font-bold text-xs uppercase tracking-wider border border-primary hover:bg-primary/80 transition-all duration-200"
           >
             Consultar
           </a>
@@ -73,7 +73,7 @@ const Catalogo = () => {
                 className={`px-5 py-2 font-body font-bold text-sm uppercase tracking-wider border transition-all duration-200 ${
                   active === cat
                     ? "bg-primary text-primary-foreground border-primary glow-border"
-                    : "bg-transparent text-muted-foreground border-border hover:border-primary hover:text-foreground"
+                    : "bg-transparent text-muted-foreground border-border hover:border-secondary hover:text-secondary"
                 }`}
               >
                 {cat}
@@ -96,7 +96,7 @@ const Catalogo = () => {
                   />
                 </div>
                 <div className="p-5">
-                  <span className="inline-block font-body text-xs uppercase tracking-wider text-primary mb-2">
+                  <span className="inline-block font-body text-xs uppercase tracking-wider text-secondary mb-2">
                     {item.category}
                   </span>
                   <h3 className="font-display text-xl text-foreground mb-1">{item.name}</h3>
@@ -120,7 +120,7 @@ const Catalogo = () => {
               href="https://wa.me/59892365380"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-8 py-4 bg-primary text-primary-foreground font-body font-bold uppercase tracking-wider hover:bg-secondary transition-all duration-200 glow-border border border-primary"
+              className="inline-block px-8 py-4 bg-primary text-primary-foreground font-body font-bold uppercase tracking-wider hover:bg-primary/80 transition-all duration-200 glow-border border border-primary"
             >
               Escribinos por WhatsApp
             </a>

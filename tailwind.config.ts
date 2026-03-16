@@ -82,8 +82,8 @@ export default {
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "glow-pulse": {
-          "0%, 100%": { boxShadow: "0 0 20px hsl(272 66% 49% / 0.3)" },
-          "50%": { boxShadow: "0 0 40px hsl(272 66% 49% / 0.6)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsl(272 61% 47% / 0.3)" },
+          "50%": { boxShadow: "0 0 40px hsl(272 61% 47% / 0.6)" },
         },
         "gear-spin": {
           "0%": { transform: "rotate(0deg)" },
