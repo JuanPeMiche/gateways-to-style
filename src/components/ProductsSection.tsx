@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import productRemeras from "@/assets/product-remeras.jpg";
 import productTazas from "@/assets/product-tazas.jpg";
 import productPortarretratos from "@/assets/product-portarretratos.jpg";
