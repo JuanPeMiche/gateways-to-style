@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import GateLogo from "./GateLogo";
 
 const navLinks = [
@@ -41,12 +42,12 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <a
-            href="#productos"
+          <Link
+            to="/catalogo"
             className="ml-2 px-5 py-2 bg-primary text-primary-foreground font-body font-bold text-sm uppercase tracking-wider border border-primary hover:bg-secondary transition-all duration-200 glow-border"
           >
             Ver catálogo
-          </a>
+          </Link>
         </div>
 
         {/* Mobile toggle */}
@@ -72,13 +73,13 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <a
-            href="#productos"
+          <Link
+            to="/catalogo"
             onClick={() => setMobileOpen(false)}
             className="mt-3 block text-center px-5 py-3 bg-primary text-primary-foreground font-body font-bold text-sm uppercase tracking-wider"
           >
             Ver catálogo
-          </a>
+          </Link>
         </div>
       )}
     </nav>

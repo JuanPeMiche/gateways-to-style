@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import productRemeras from "@/assets/product-remeras.jpg";
 import productTazas from "@/assets/product-tazas.jpg";
 import productPortarretratos from "@/assets/product-portarretratos.jpg";
@@ -63,12 +64,12 @@ const ProductsSection = () => (
       </div>
 
       <div className="text-center mt-12">
-        <a
-          href="#contacto"
+        <Link
+          to="/catalogo"
           className="inline-block px-8 py-3 border border-primary text-primary font-body font-bold uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-200"
         >
           Ver más
-        </a>
+        </Link>
       </div>
     </div>
   </section>
