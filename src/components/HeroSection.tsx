@@ -1,4 +1,5 @@
 import { Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => (
   <section
