@@ -5,7 +5,7 @@ const GateLogo = ({ className = "" }: { className?: string }) => (
     <img
       src={logoImage}
       alt="Gate01 Logo"
-      className="h-[48px] md:h-[48px] h-[38px] w-auto object-contain transition-all duration-200 group-hover:brightness-[1.05]"
+      className="h-[38px] md:h-[48px] w-auto object-contain transition-all duration-200 group-hover:brightness-110"
     />
   </a>
 );

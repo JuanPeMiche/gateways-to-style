@@ -66,7 +66,7 @@ const ProductsSection = () => (
       <div className="text-center mt-12">
         <Link
           to="/catalogo"
-          className="inline-block px-8 py-3 border border-primary text-primary font-body font-bold uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+          className="inline-block px-8 py-3 border border-secondary text-secondary font-body font-bold uppercase tracking-wider hover:bg-secondary hover:text-secondary-foreground transition-all duration-200"
         >
           Ver más
         </Link>

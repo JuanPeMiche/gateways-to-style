@@ -2,7 +2,7 @@ import { Instagram, MessageCircle } from "lucide-react";
 import GateLogo from "./GateLogo";
 
 const Footer = () => (
-  <footer className="border-t border-primary/30 bg-card py-12">
+  <footer className="border-t-2 border-gradient-brand bg-card py-12">
     <div className="container mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
         <div>
@@ -19,7 +19,7 @@ const Footer = () => (
               <a
                 key={link}
                 href={`#${link === "Inicio" ? "inicio" : link === "Productos" ? "productos" : link === "Sobre Nosotros" ? "nosotros" : "contacto"}`}
-                className="block font-body text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="block font-body text-sm text-muted-foreground hover:text-secondary transition-colors"
               >
                 {link}
               </a>
@@ -34,7 +34,7 @@ const Footer = () => (
               href="https://instagram.com/gate01.uy"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-10 h-10 border border-border rounded-sm flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-all"
+              className="w-10 h-10 border border-border rounded-sm flex items-center justify-center text-muted-foreground hover:text-secondary hover:border-secondary transition-all"
               aria-label="Instagram gate01.uy"
             >
               <Instagram size={18} />

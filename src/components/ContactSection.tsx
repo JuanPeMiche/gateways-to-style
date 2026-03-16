@@ -16,7 +16,7 @@ const ContactSection = () => {
       <div className="container mx-auto px-4">
         <ScrollReveal>
           <h2 className="font-display text-5xl md:text-6xl text-center mb-16 text-foreground">
-            <span className="text-primary">Contactanos</span>
+            <span className="text-primary">Contacta</span><span className="text-secondary">nos</span>
           </h2>
         </ScrollReveal>
 
@@ -28,7 +28,7 @@ const ContactSection = () => {
                 href="https://wa.me/59892365380"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 bg-card border border-border rounded-lg p-5 transition-all duration-300 hover:border-whatsapp hover:shadow-[0_0_20px_hsl(142_70%_45%/0.3)]"
+                className="flex items-center gap-4 bg-card border border-border rounded-lg p-5 transition-all duration-300 hover:border-whatsapp hover:shadow-[0_0_20px_hsl(142_70%_49%/0.3)]"
               >
                 <div className="w-12 h-12 rounded-lg bg-whatsapp/10 flex items-center justify-center">
                   <MessageCircle className="w-6 h-6 text-whatsapp" />
@@ -43,10 +43,10 @@ const ContactSection = () => {
                 href="https://instagram.com/gate01.uy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-4 bg-card border border-border rounded-lg p-5 transition-all duration-300 hover:glow-border"
+                className="flex items-center gap-4 bg-card border border-border rounded-lg p-5 transition-all duration-300 hover:border-secondary hover:shadow-[0_0_20px_hsl(134_55%_47%/0.3)]"
               >
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Instagram className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center">
+                  <Instagram className="w-6 h-6 text-secondary" />
                 </div>
                 <div>
                   <p className="font-body font-bold text-foreground">@gate01.uy</p>
@@ -70,8 +70,8 @@ const ContactSection = () => {
               </a>
 
               <div className="flex items-center gap-4 bg-card border border-border rounded-lg p-5">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-secondary" />
                 </div>
                 <div>
                   <p className="font-body font-bold text-foreground">Montevideo, Uruguay</p>
@@ -93,7 +93,7 @@ const ContactSection = () => {
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full bg-input border border-border rounded-sm px-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                  className="w-full bg-input border border-border rounded-sm px-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                   placeholder="Tu nombre"
                 />
               </div>
@@ -106,7 +106,7 @@ const ContactSection = () => {
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full bg-input border border-border rounded-sm px-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                  className="w-full bg-input border border-border rounded-sm px-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                   placeholder="tu@email.com"
                 />
               </div>
@@ -119,13 +119,13 @@ const ContactSection = () => {
                   rows={4}
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  className="w-full bg-input border border-border rounded-sm px-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors resize-none"
+                  className="w-full bg-input border border-border rounded-sm px-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
                   placeholder="¿En qué podemos ayudarte?"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-body font-bold uppercase tracking-wider hover:bg-secondary transition-all duration-200 glow-border border border-primary"
+                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-body font-bold uppercase tracking-wider hover:bg-primary/80 transition-all duration-200 glow-border border border-primary"
               >
                 <Send className="w-4 h-4" />
                 Enviar mensaje
