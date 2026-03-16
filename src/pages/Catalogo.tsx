@@ -28,7 +28,14 @@ const catalogItems = [
 
 const Catalogo = () => {
   const [active, setActive] = useState("Todos");
-  const filtered = active === "Todos" ? catalogItems : catalogItems.filter((i) => i.category === active);
+  const [search, setSearch] = useState("");
+  const filtered = catalogItems
+    .filter((i) => active === "Todos" || i.category === active)
+    .filter((i) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return i.name.toLowerCase().includes(q) || i.description.toLowerCase().includes(q) || i.category.toLowerCase().includes(q);
+    });
 
   return (
     <div className="min-h-screen bg-background">
