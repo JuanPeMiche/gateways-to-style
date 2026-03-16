@@ -132,6 +132,7 @@ const Catalogo = () => {
             </ScrollReveal>
           ))}
         </div>
+        )}
 
         {/* CTA */}
         <ScrollReveal delay={200}>
