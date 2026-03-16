@@ -64,12 +64,12 @@ const ProductsSection = () => (
       </div>
 
       <div className="text-center mt-12">
-        <a
-          href="#contacto"
+        <Link
+          to="/catalogo"
           className="inline-block px-8 py-3 border border-primary text-primary font-body font-bold uppercase tracking-wider hover:bg-primary hover:text-primary-foreground transition-all duration-200"
         >
           Ver más
-        </a>
+        </Link>
       </div>
     </div>
   </section>

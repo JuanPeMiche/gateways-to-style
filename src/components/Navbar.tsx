@@ -73,13 +73,13 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <a
-            href="#productos"
+          <Link
+            to="/catalogo"
             onClick={() => setMobileOpen(false)}
             className="mt-3 block text-center px-5 py-3 bg-primary text-primary-foreground font-body font-bold text-sm uppercase tracking-wider"
           >
             Ver catálogo
-          </a>
+          </Link>
         </div>
       )}
     </nav>
