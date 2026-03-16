@@ -42,12 +42,12 @@ const Navbar = () => {
               {link.label}
             </a>
           ))}
-          <a
-            href="#productos"
+          <Link
+            to="/catalogo"
             className="ml-2 px-5 py-2 bg-primary text-primary-foreground font-body font-bold text-sm uppercase tracking-wider border border-primary hover:bg-secondary transition-all duration-200 glow-border"
           >
             Ver catálogo
-          </a>
+          </Link>
         </div>
 
         {/* Mobile toggle */}
