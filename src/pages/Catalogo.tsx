@@ -104,6 +104,11 @@ const Catalogo = () => {
         </ScrollReveal>
 
         {/* Product grid */}
+        {filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="font-body text-muted-foreground text-lg">No se encontraron productos para "{search}"</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filtered.map((item, i) => (
             <ScrollReveal key={item.name} delay={i * 80}>
