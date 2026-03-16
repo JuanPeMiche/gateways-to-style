@@ -70,6 +70,20 @@ const Catalogo = () => {
           </p>
         </ScrollReveal>
 
+        {/* Search */}
+        <ScrollReveal delay={50}>
+          <div className="relative max-w-md mx-auto mb-8">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar productos..."
+              className="w-full bg-card border border-border rounded-lg pl-12 pr-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+            />
+          </div>
+        </ScrollReveal>
+
         {/* Category filters */}
         <ScrollReveal delay={100}>
           <div className="flex flex-wrap justify-center gap-3 mb-12">
