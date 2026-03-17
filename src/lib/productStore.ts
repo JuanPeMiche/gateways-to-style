@@ -23,6 +23,7 @@ export const CATEGORIES = [
 export type ProductCategory = (typeof CATEGORIES)[number];
 
 const BUCKET = "product-images";
+const PAGE_SIZE = 18;
 
 // Upload a file to storage, return public URL
 export async function uploadImage(file: File): Promise<string> {
@@ -50,7 +51,6 @@ export async function uploadBase64Image(dataUrl: string): Promise<string> {
 }
 
 export async function deleteStorageImage(url: string): Promise<void> {
-  // Extract path from public URL
   const match = url.match(/\/product-images\/(.+)$/);
   if (match) {
     await supabase.storage.from(BUCKET).remove([match[1]]);
@@ -76,6 +76,54 @@ export async function getPublishedProducts(): Promise<Product[]> {
 
   if (error) throw error;
   return (data || []) as Product[];
+}
+
+// Paginated fetch for catalog
+export async function getPublishedProductsPaginated(
+  page: number,
+  category?: string,
+  search?: string
+): Promise<{ products: Product[]; hasMore: boolean }> {
+  const from = page * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  let query = supabase
+    .from("products")
+    .select("*")
+    .eq("visible", true)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (category && category !== "Todos") {
+    query = query.eq("category", category);
+  }
+
+  if (search?.trim()) {
+    const q = `%${search.trim()}%`;
+    query = query.or(`name.ilike.${q},description.ilike.${q},category.ilike.${q}`);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  const products = (data || []) as Product[];
+  return { products, hasMore: products.length === PAGE_SIZE };
+}
+
+// Get counts per category for published products
+export async function getCategoryCounts(): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("category")
+    .eq("visible", true);
+
+  if (error) throw error;
+
+  const counts: Record<string, number> = { Todos: data?.length || 0 };
+  for (const row of data || []) {
+    counts[row.category] = (counts[row.category] || 0) + 1;
+  }
+  return counts;
 }
 
 export async function addProduct(
@@ -111,7 +159,6 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  // First get product to delete its images from storage
   const { data: product } = await supabase
     .from("products")
     .select("images")
@@ -133,3 +180,5 @@ export async function deleteProduct(id: string): Promise<void> {
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) throw error;
 }
+
+export { PAGE_SIZE };
