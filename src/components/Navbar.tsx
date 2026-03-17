@@ -48,6 +48,14 @@ const Navbar = () => {
           >
             Ver catálogo
           </Link>
+          <Link
+            to="/admin"
+            className="p-2 text-muted-foreground hover:text-secondary transition-colors duration-200"
+            aria-label="Admin"
+            title="Administración"
+          >
+            <UserCog className="w-5 h-5" />
+          </Link>
         </div>
 
         {/* Mobile toggle */}
