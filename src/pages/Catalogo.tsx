@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Search, Settings, Loader2 } from "lucide-react";
 import GateLogo from "@/components/GateLogo";
 import {
