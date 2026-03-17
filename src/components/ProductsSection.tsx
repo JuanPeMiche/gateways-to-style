@@ -50,15 +50,15 @@ const ProductsSection = () => (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product, i) => (
           <ScrollReveal key={product.name} delay={i * 100}>
-            <div className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02]">
-              <div className="aspect-square overflow-hidden bg-[#1a1a1a] flex items-center justify-center">
-                <product.icon className="w-16 h-16 text-muted-foreground/40 group-hover:text-primary transition-colors duration-300" />
-              </div>
-              <div className="p-5">
-                <h3 className="font-display text-2xl text-foreground mb-2">{product.name}</h3>
-                <p className="font-body text-muted-foreground text-sm leading-relaxed">
+            <div className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02] flex flex-col h-full">
+              <div className="p-5 h-[100px] flex flex-col justify-center">
+                <h3 className="font-display text-2xl text-foreground mb-1">{product.name}</h3>
+                <p className="font-body text-muted-foreground text-sm leading-relaxed line-clamp-2">
                   {product.description}
                 </p>
+              </div>
+              <div className="flex-1 min-h-[220px] overflow-hidden bg-[#1a1a1a] flex items-center justify-center">
+                <product.icon className="w-16 h-16 text-muted-foreground/40 group-hover:text-primary transition-colors duration-300" />
               </div>
             </div>
           </ScrollReveal>
