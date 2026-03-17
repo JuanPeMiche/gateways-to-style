@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { addProduct, uploadImage, CATEGORIES, type ProductCategory } from "@/lib/productStore";
+import { compressImage, formatBytes } from "@/lib/imageCompressor";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
