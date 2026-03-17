@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, UserCog } from "lucide-react";
 import { Link } from "react-router-dom";
 import GateLogo from "./GateLogo";
 
@@ -48,6 +48,14 @@ const Navbar = () => {
           >
             Ver catálogo
           </Link>
+          <Link
+            to="/admin"
+            className="p-2 text-muted-foreground hover:text-secondary transition-colors duration-200"
+            aria-label="Admin"
+            title="Administración"
+          >
+            <UserCog className="w-5 h-5" />
+          </Link>
         </div>
 
         {/* Mobile toggle */}
@@ -79,6 +87,13 @@ const Navbar = () => {
             className="mt-3 block text-center px-5 py-3 bg-primary text-primary-foreground font-body font-bold text-sm uppercase tracking-wider"
           >
             Ver catálogo
+          </Link>
+          <Link
+            to="/admin"
+            onClick={() => setMobileOpen(false)}
+            className="mt-2 flex items-center justify-center gap-2 py-3 text-muted-foreground hover:text-secondary font-body text-sm uppercase tracking-wider transition-colors"
+          >
+            <UserCog className="w-4 h-4" /> Administración
           </Link>
         </div>
       )}

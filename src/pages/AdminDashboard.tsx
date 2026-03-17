@@ -55,7 +55,7 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/admin", { replace: true });
+    navigate("/", { replace: true });
   };
 
   // Form helpers
