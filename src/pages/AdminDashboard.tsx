@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Pencil, Trash2, ExternalLink, LogOut, Eye, EyeOff,
-  Upload, X, Image as ImageIcon,
+  Upload, X, Image as ImageIcon, UploadCloud,
 } from "lucide-react";
+import BulkUploadDialog from "@/components/BulkUploadDialog";
 import { isAuthenticated, logout } from "@/lib/adminAuth";
 import {
   getProducts, addProduct, updateProduct, deleteProduct,
