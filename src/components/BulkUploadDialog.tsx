@@ -65,7 +65,7 @@ const BulkUploadDialog = ({ open, onOpenChange, onComplete }: BulkUploadDialogPr
         continue;
       }
       if (file.size > MAX_SIZE) {
-        toast({ title: "Archivo muy grande", description: `${file.name} — máximo 5MB`, variant: "destructive" });
+        toast({ title: "Archivo muy grande", description: `${file.name} — máximo 10MB`, variant: "destructive" });
         continue;
       }
       // Derive a clean name from filename
