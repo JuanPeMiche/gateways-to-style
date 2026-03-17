@@ -191,12 +191,20 @@ const AdminDashboard = () => {
         {/* Title + Add */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="font-display text-3xl text-foreground">Gestión de Productos</h1>
-          <button
-            onClick={openAdd}
-            className="flex items-center gap-2 px-5 py-2.5 bg-secondary text-secondary-foreground font-body font-bold text-sm uppercase tracking-wider rounded-md hover:bg-secondary/80 transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Agregar producto
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setBulkOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 border border-secondary text-secondary font-body font-bold text-sm uppercase tracking-wider rounded-md hover:bg-secondary hover:text-secondary-foreground transition-colors"
+            >
+              <UploadCloud className="w-4 h-4" /> Carga masiva
+            </button>
+            <button
+              onClick={openAdd}
+              className="flex items-center gap-2 px-5 py-2.5 bg-secondary text-secondary-foreground font-body font-bold text-sm uppercase tracking-wider rounded-md hover:bg-secondary/80 transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Agregar producto
+            </button>
+          </div>
         </div>
 
         {/* Category tabs */}
