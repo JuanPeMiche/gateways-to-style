@@ -138,8 +138,13 @@ const BulkUploadDialog = ({ open, onOpenChange, onComplete }: BulkUploadDialogPr
           visible: false, // Hidden by default so admin can edit before publishing
         });
         created++;
-      } catch {
-        console.error(`Error processing ${pending[i].file.name}`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "";
+        if (msg.includes("almacenamiento lleno")) {
+          toast({ title: "Almacenamiento lleno", description: `Se crearon ${created} productos antes de quedarse sin espacio. Eliminá productos o imágenes para liberar espacio.`, variant: "destructive" });
+          break;
+        }
+        console.error(`Error processing ${pending[i].file.name}`, err);
       }
       setProgress(Math.round(((i + 1) / pending.length) * 100));
     }

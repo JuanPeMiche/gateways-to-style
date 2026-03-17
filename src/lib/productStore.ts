@@ -32,8 +32,13 @@ export function getProducts(): Product[] {
 }
 
 export function saveProducts(products: Product[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-  window.dispatchEvent(new Event("gate01_products_updated"));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    window.dispatchEvent(new Event("gate01_products_updated"));
+  } catch (e) {
+    console.error("Error saving products (localStorage may be full):", e);
+    throw new Error("No se pudo guardar: almacenamiento lleno");
+  }
 }
 
 export function addProduct(product: Omit<Product, "id" | "createdAt">): Product {
