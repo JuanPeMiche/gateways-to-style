@@ -1,25 +1,93 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Search, Settings } from "lucide-react";
-import ScrollReveal from "@/components/ScrollReveal";
+import { ArrowLeft, Search, Settings, Loader2 } from "lucide-react";
 import GateLogo from "@/components/GateLogo";
-import { getPublishedProducts, CATEGORIES, type Product } from "@/lib/productStore";
+import {
+  getPublishedProductsPaginated,
+  getCategoryCounts,
+  CATEGORIES,
+  PAGE_SIZE,
+  type Product,
+} from "@/lib/productStore";
 
 const allFilters = ["Todos", ...CATEGORIES] as const;
 
 const Catalogo = () => {
   const [active, setActive] = useState("Todos");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [counts, setCounts] = useState<Record<string, number>>({});
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [hoverImageIdx, setHoverImageIdx] = useState(0);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Load counts once
+  useEffect(() => {
+    getCategoryCounts().then(setCounts).catch(console.error);
+  }, []);
+
+  // Reset when filter or search changes
+  useEffect(() => {
+    setProducts([]);
+    setPage(0);
+    setHasMore(true);
+    setInitialLoad(true);
+  }, [active, debouncedSearch]);
+
+  // Fetch page
+  const fetchPage = useCallback(
+    async (pageNum: number) => {
+      setLoading(true);
+      try {
+        const { products: newProducts, hasMore: more } =
+          await getPublishedProductsPaginated(
+            pageNum,
+            active,
+            debouncedSearch || undefined
+          );
+        setProducts((prev) =>
+          pageNum === 0 ? newProducts : [...prev, ...newProducts]
+        );
+        setHasMore(more);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        setInitialLoad(false);
+      }
+    },
+    [active, debouncedSearch]
+  );
 
   useEffect(() => {
-    const load = () => {
-      getPublishedProducts().then(setProducts).catch(console.error);
-    };
-    load();
-  }, []);
+    fetchPage(page);
+  }, [page, fetchPage]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPage((p) => p + 1);
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading]);
 
   // Cycle images on hover
   useEffect(() => {
@@ -31,27 +99,6 @@ const Catalogo = () => {
     }, 1200);
     return () => clearInterval(interval);
   }, [hoveredId, products]);
-
-  const filtered = products
-    .filter((i) => active === "Todos" || i.category === active)
-    .filter((i) => {
-      if (!search.trim()) return true;
-      const q = search.toLowerCase();
-      return (
-        i.name.toLowerCase().includes(q) ||
-        i.description.toLowerCase().includes(q) ||
-        i.category.toLowerCase().includes(q)
-      );
-    });
-
-  // Check if a category has published products
-  const categoryHasProducts = (cat: string) =>
-    cat === "Todos"
-      ? products.length > 0
-      : products.some((p) => p.category === cat);
-
-  const showEmpty =
-    active !== "Todos" && !categoryHasProducts(active) && !search.trim();
 
   return (
     <div className="min-h-screen bg-background">
@@ -80,33 +127,31 @@ const Catalogo = () => {
       </div>
 
       <div className="container mx-auto px-4 py-12">
-        <ScrollReveal>
-          <h1 className="font-display text-5xl md:text-7xl text-center mb-4 text-foreground">
-            Nuestro <span className="text-primary">Catálogo</span>
-          </h1>
-          <p className="text-center text-muted-foreground font-body text-lg mb-12 max-w-xl mx-auto">
-            Explorá todos nuestros productos personalizados. ¿Te gusta algo? Escribinos por WhatsApp.
-          </p>
-        </ScrollReveal>
+        <h1 className="font-display text-5xl md:text-7xl text-center mb-4 text-foreground">
+          Nuestro <span className="text-primary">Catálogo</span>
+        </h1>
+        <p className="text-center text-muted-foreground font-body text-lg mb-10 max-w-xl mx-auto">
+          Explorá todos nuestros productos personalizados. ¿Te gusta algo?
+          Escribinos por WhatsApp.
+        </p>
 
         {/* Search */}
-        <ScrollReveal delay={50}>
-          <div className="relative max-w-md mx-auto mb-8">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar productos..."
-              className="w-full bg-card border border-border rounded-lg pl-12 pr-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-            />
-          </div>
-        </ScrollReveal>
+        <div className="relative max-w-md mx-auto mb-8">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar productos..."
+            className="w-full bg-card border border-border rounded-lg pl-12 pr-4 py-3 font-body text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+          />
+        </div>
 
-        {/* Category filters */}
-        <ScrollReveal delay={100}>
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {allFilters.map((cat) => (
+        {/* Category filters with counts */}
+        <div className="flex flex-wrap justify-center gap-3 mb-10">
+          {allFilters.map((cat) => {
+            const count = counts[cat] ?? 0;
+            return (
               <button
                 key={cat}
                 onClick={() => setActive(cat)}
@@ -117,45 +162,54 @@ const Catalogo = () => {
                 }`}
               >
                 {cat}
+                {count > 0 && (
+                  <span className="ml-2 text-xs opacity-70">({count})</span>
+                )}
               </button>
-            ))}
-          </div>
-        </ScrollReveal>
+            );
+          })}
+        </div>
 
-        {/* Empty state for category */}
-        {showEmpty ? (
-          <div className="text-center py-20">
-            <Settings className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30 animate-pulse" />
-            <p className="font-body text-muted-foreground text-lg">
-              Próximamente productos en esta categoría
-            </p>
+        {/* Initial loading */}
+        {initialLoad ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : filtered.length === 0 && search.trim() ? (
-          <div className="text-center py-16">
-            <p className="font-body text-muted-foreground text-lg">
-              No se encontraron productos para "{search}"
-            </p>
-          </div>
-        ) : filtered.length === 0 && active === "Todos" ? (
+        ) : products.length === 0 ? (
           <div className="text-center py-20">
-            <Settings className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30 animate-pulse" />
+            <Settings className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
             <p className="font-body text-muted-foreground text-lg">
-              Próximamente productos disponibles
+              {debouncedSearch
+                ? `No se encontraron productos para "${debouncedSearch}"`
+                : "Próximamente productos en esta categoría"}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((item, i) => {
-              const isHovered = hoveredId === item.id;
-              const imgIdx = isHovered ? hoverImageIdx % Math.max(item.images.length, 1) : 0;
-              return (
-                <ScrollReveal key={item.id} delay={i * 80}>
+          <>
+            {/* Product count */}
+            <p className="text-center text-muted-foreground font-body text-sm mb-6">
+              {products.length}
+              {hasMore ? "+" : ""} productos
+            </p>
+
+            {/* Product grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {products.map((item) => {
+                const isHovered = hoveredId === item.id;
+                const imgIdx = isHovered
+                  ? hoverImageIdx % Math.max(item.images.length, 1)
+                  : 0;
+                return (
                   <div
+                    key={item.id}
                     className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02]"
-                    onMouseEnter={() => { setHoveredId(item.id); setHoverImageIdx(0); }}
+                    onMouseEnter={() => {
+                      setHoveredId(item.id);
+                      setHoverImageIdx(0);
+                    }}
                     onMouseLeave={() => setHoveredId(null)}
                   >
-                    <div className="relative h-[260px] overflow-hidden bg-muted">
+                    <div className="relative aspect-square overflow-hidden bg-muted">
                       {item.images.length > 0 ? (
                         <>
                           <img
@@ -163,6 +217,7 @@ const Catalogo = () => {
                             alt={item.name}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             loading="lazy"
+                            decoding="async"
                           />
                           {item.images.length > 1 && (
                             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
@@ -170,7 +225,9 @@ const Catalogo = () => {
                                 <span
                                   key={di}
                                   className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                    di === imgIdx ? "bg-primary" : "bg-white/40"
+                                    di === imgIdx
+                                      ? "bg-primary"
+                                      : "bg-white/40"
                                   }`}
                                 />
                               ))}
@@ -178,50 +235,69 @@ const Catalogo = () => {
                           )}
                         </>
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-[hsl(0_0%_10%)]">
-                          <Settings className="w-10 h-10 text-muted-foreground/20" />
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Settings className="w-8 h-8 text-muted-foreground/20" />
                         </div>
                       )}
-                      {/* Category badge */}
-                      <span className="absolute top-3 left-3 px-2.5 py-0.5 bg-primary text-primary-foreground font-body text-[10px] font-bold uppercase tracking-wider rounded-full">
+                      <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-primary-foreground font-body text-[9px] font-bold uppercase tracking-wider rounded-full">
                         {item.category}
                       </span>
                     </div>
-                    <div className="p-5">
-                      <h3 className="font-display text-xl text-foreground mb-1">{item.name}</h3>
+                    <div className="p-3">
+                      <h3 className="font-display text-sm text-foreground leading-tight mb-1 truncate">
+                        {item.name}
+                      </h3>
                       {item.description && (
-                        <p className="font-body text-muted-foreground text-sm mb-2">{item.description}</p>
+                        <p className="font-body text-muted-foreground text-xs line-clamp-2 mb-1">
+                          {item.description}
+                        </p>
                       )}
                       {item.price !== null && (
-                        <p className="font-body text-secondary font-bold">${item.price} UYU</p>
+                        <p className="font-body text-secondary font-bold text-sm">
+                          ${item.price} UYU
+                        </p>
                       )}
                     </div>
                   </div>
-                </ScrollReveal>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="h-4" />
+
+            {loading && !initialLoad && (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            )}
+
+            {!hasMore && products.length > 0 && (
+              <p className="text-center text-muted-foreground/50 font-body text-sm py-8">
+                — Fin del catálogo —
+              </p>
+            )}
+          </>
         )}
 
         {/* CTA */}
-        <ScrollReveal delay={200}>
-          <div className="text-center mt-16 bg-card border border-border rounded-lg p-10">
-            <h2 className="font-display text-3xl text-foreground mb-3">
-              ¿No encontrás lo que buscás?
-            </h2>
-            <p className="font-body text-muted-foreground mb-6">
-              Hacemos productos 100% personalizados. Mandanos tu idea y lo creamos para vos.
-            </p>
-            <a
-              href="https://wa.me/59892365380"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block px-8 py-4 bg-primary text-primary-foreground font-body font-bold uppercase tracking-wider hover:bg-primary/80 transition-all duration-200 glow-border border border-primary"
-            >
-              Escribinos por WhatsApp
-            </a>
-          </div>
-        </ScrollReveal>
+        <div className="text-center mt-16 bg-card border border-border rounded-lg p-10">
+          <h2 className="font-display text-3xl text-foreground mb-3">
+            ¿No encontrás lo que buscás?
+          </h2>
+          <p className="font-body text-muted-foreground mb-6">
+            Hacemos productos 100% personalizados. Mandanos tu idea y lo creamos
+            para vos.
+          </p>
+          <a
+            href="https://wa.me/59892365380"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-8 py-4 bg-primary text-primary-foreground font-body font-bold uppercase tracking-wider hover:bg-primary/80 transition-all duration-200 glow-border border border-primary"
+          >
+            Escribinos por WhatsApp
+          </a>
+        </div>
       </div>
     </div>
   );
