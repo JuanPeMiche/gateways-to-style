@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Search, Settings, Loader2 } from "lucide-react";
 import GateLogo from "@/components/GateLogo";
 import {
@@ -13,7 +13,9 @@ import {
 const allFilters = ["Todos", ...CATEGORIES] as const;
 
 const Catalogo = () => {
-  const [active, setActive] = useState("Todos");
+  const [searchParams] = useSearchParams();
+  const initialCat = searchParams.get("cat") || "Todos";
+  const [active, setActive] = useState(initialCat);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [products, setProducts] = useState<Product[]>([]);

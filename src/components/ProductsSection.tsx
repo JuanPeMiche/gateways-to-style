@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Shirt, ScrollText, Monitor, Frame, Package, Gift } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
+import { supabase } from "@/integrations/supabase/client";
 
-const products = [
+const categoryMeta = [
   {
     name: "Remeras",
     description: "Diseños anime, gaming y arte urbano impresos en remeras de alta calidad.",
@@ -35,46 +37,90 @@ const products = [
   },
 ];
 
-const ProductsSection = () => (
-  <section id="productos" className="py-24 bg-background">
-    <div className="container mx-auto px-4">
-      <ScrollReveal>
-        <h2 className="font-display text-5xl md:text-6xl text-center mb-4 text-foreground">
-          Nuestros <span className="text-primary">Productos</span>
-        </h2>
-        <p className="text-center text-muted-foreground font-body text-lg mb-16 max-w-xl mx-auto">
-          Productos personalizados con diseños que te representan
-        </p>
-      </ScrollReveal>
+const ProductsSection = () => {
+  const [images, setImages] = useState<Record<string, string>>({});
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product, i) => (
-          <ScrollReveal key={product.name} delay={i * 100}>
-            <div className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02] flex flex-col h-full">
-              <div className="p-5 h-[100px] flex flex-col justify-center">
-                <h3 className="font-display text-2xl text-foreground mb-1">{product.name}</h3>
-                <p className="font-body text-muted-foreground text-sm leading-relaxed line-clamp-2">
-                  {product.description}
-                </p>
-              </div>
-              <div className="flex-1 min-h-[220px] overflow-hidden bg-[#1a1a1a] flex items-center justify-center">
-                <product.icon className="w-16 h-16 text-muted-foreground/40 group-hover:text-primary transition-colors duration-300" />
-              </div>
-            </div>
-          </ScrollReveal>
-        ))}
-      </div>
+  useEffect(() => {
+    // Fetch one image per category
+    const fetchImages = async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("category, images")
+        .eq("visible", true)
+        .order("created_at", { ascending: false });
 
-      <div className="text-center mt-12">
-        <Link
-          to="/catalogo"
-          className="inline-block px-8 py-3 border border-secondary text-secondary font-body font-bold uppercase tracking-wider hover:bg-secondary hover:text-secondary-foreground transition-all duration-200"
-        >
-          Ver más
-        </Link>
+      if (!data) return;
+
+      const map: Record<string, string> = {};
+      for (const row of data) {
+        if (!map[row.category] && row.images?.length > 0) {
+          map[row.category] = row.images[0];
+        }
+      }
+      setImages(map);
+    };
+    fetchImages();
+  }, []);
+
+  return (
+    <section id="productos" className="py-24 bg-background">
+      <div className="container mx-auto px-4">
+        <ScrollReveal>
+          <h2 className="font-display text-5xl md:text-6xl text-center mb-4 text-foreground">
+            Nuestros <span className="text-primary">Productos</span>
+          </h2>
+          <p className="text-center text-muted-foreground font-body text-lg mb-16 max-w-xl mx-auto">
+            Productos personalizados con diseños que te representan
+          </p>
+        </ScrollReveal>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categoryMeta.map((product, i) => {
+            const img = images[product.name];
+            return (
+              <ScrollReveal key={product.name} delay={i * 100}>
+                <Link
+                  to={`/catalogo?cat=${encodeURIComponent(product.name)}`}
+                  className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02] flex flex-col h-full block"
+                >
+                  <div className="p-5 h-[100px] flex flex-col justify-center">
+                    <h3 className="font-display text-2xl text-foreground mb-1">
+                      {product.name}
+                    </h3>
+                    <p className="font-body text-muted-foreground text-sm leading-relaxed line-clamp-2">
+                      {product.description}
+                    </p>
+                  </div>
+                  <div className="flex-1 min-h-[220px] overflow-hidden bg-muted flex items-center justify-center relative">
+                    {img ? (
+                      <img
+                        src={img}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <product.icon className="w-16 h-16 text-muted-foreground/40 group-hover:text-primary transition-colors duration-300" />
+                    )}
+                  </div>
+                </Link>
+              </ScrollReveal>
+            );
+          })}
+        </div>
+
+        <div className="text-center mt-12">
+          <Link
+            to="/catalogo"
+            className="inline-block px-8 py-3 border border-secondary text-secondary font-body font-bold uppercase tracking-wider hover:bg-secondary hover:text-secondary-foreground transition-all duration-200"
+          >
+            Ver más
+          </Link>
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default ProductsSection;
