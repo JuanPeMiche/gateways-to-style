@@ -94,11 +94,29 @@ const BulkUploadDialog = ({ open, onOpenChange, onComplete }: BulkUploadDialogPr
     });
   };
 
-  const readFileAsDataURL = (file: File): Promise<string> =>
+  const compressImage = (file: File, maxDim = 800, quality = 0.7): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
       reader.onerror = reject;
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            const ratio = Math.min(maxDim / width, maxDim / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.src = reader.result as string;
+      };
       reader.readAsDataURL(file);
     });
 
@@ -110,7 +128,7 @@ const BulkUploadDialog = ({ open, onOpenChange, onComplete }: BulkUploadDialogPr
     let created = 0;
     for (let i = 0; i < pending.length; i++) {
       try {
-        const dataUrl = await readFileAsDataURL(pending[i].file);
+        const dataUrl = await compressImage(pending[i].file);
         addProduct({
           name: pending[i].name,
           category,
@@ -120,8 +138,13 @@ const BulkUploadDialog = ({ open, onOpenChange, onComplete }: BulkUploadDialogPr
           visible: false, // Hidden by default so admin can edit before publishing
         });
         created++;
-      } catch {
-        console.error(`Error processing ${pending[i].file.name}`);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "";
+        if (msg.includes("almacenamiento lleno")) {
+          toast({ title: "Almacenamiento lleno", description: `Se crearon ${created} productos antes de quedarse sin espacio. Eliminá productos o imágenes para liberar espacio.`, variant: "destructive" });
+          break;
+        }
+        console.error(`Error processing ${pending[i].file.name}`, err);
       }
       setProgress(Math.round(((i + 1) / pending.length) * 100));
     }
