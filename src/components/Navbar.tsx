@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, UserCog } from "lucide-react";
 import { Link } from "react-router-dom";
 import GateLogo from "./GateLogo";
 
