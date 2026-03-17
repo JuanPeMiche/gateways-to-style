@@ -479,6 +479,9 @@ const AdminDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk upload */}
+      <BulkUploadDialog open={bulkOpen} onOpenChange={setBulkOpen} onComplete={reload} />
     </div>
   );
 };
