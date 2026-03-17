@@ -8,7 +8,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 
 const MAX_BULK = 30;
-const MAX_SIZE = 5 * 1024 * 1024;
+const MAX_SIZE = 10 * 1024 * 1024;
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
 
 interface BulkUploadDialogProps {
@@ -65,7 +65,7 @@ const BulkUploadDialog = ({ open, onOpenChange, onComplete }: BulkUploadDialogPr
         continue;
       }
       if (file.size > MAX_SIZE) {
-        toast({ title: "Archivo muy grande", description: `${file.name} — máximo 5MB`, variant: "destructive" });
+        toast({ title: "Archivo muy grande", description: `${file.name} — máximo 10MB`, variant: "destructive" });
         continue;
       }
       // Derive a clean name from filename
@@ -177,7 +177,7 @@ const BulkUploadDialog = ({ open, onOpenChange, onComplete }: BulkUploadDialogPr
             <p className="font-body text-sm text-muted-foreground">
               Arrastrá hasta {MAX_BULK} imágenes o hacé clic para buscar
             </p>
-            <p className="font-body text-xs text-muted-foreground/60 mt-1">JPG, PNG, WEBP — máx 5MB cada una</p>
+            <p className="font-body text-xs text-muted-foreground/60 mt-1">JPG, PNG, WEBP — máx 10MB cada una</p>
           </div>
           <input
             ref={fileInputRef}
