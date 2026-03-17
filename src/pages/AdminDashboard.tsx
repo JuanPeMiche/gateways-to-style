@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 
 const MAX_IMAGES = 5;
-const MAX_SIZE = 5 * 1024 * 1024;
+const MAX_SIZE = 10 * 1024 * 1024;
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
 
 const AdminDashboard = () => {

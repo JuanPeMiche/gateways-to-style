@@ -177,7 +177,7 @@ const BulkUploadDialog = ({ open, onOpenChange, onComplete }: BulkUploadDialogPr
             <p className="font-body text-sm text-muted-foreground">
               Arrastrá hasta {MAX_BULK} imágenes o hacé clic para buscar
             </p>
-            <p className="font-body text-xs text-muted-foreground/60 mt-1">JPG, PNG, WEBP — máx 5MB cada una</p>
+            <p className="font-body text-xs text-muted-foreground/60 mt-1">JPG, PNG, WEBP — máx 10MB cada una</p>
           </div>
           <input
             ref={fileInputRef}
