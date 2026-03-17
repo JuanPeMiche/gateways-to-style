@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { login, isAuthenticated } from "@/lib/adminAuth";
-import logoImage from "@/assets/logo-gate01.jpg";
+import logoImage from "@/assets/logo-gate01.png";
 import { useEffect } from "react";
 
 const AdminLogin = () => {
