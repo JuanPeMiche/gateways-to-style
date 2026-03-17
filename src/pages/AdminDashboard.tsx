@@ -7,7 +7,7 @@ import {
 import BulkUploadDialog from "@/components/BulkUploadDialog";
 import { isAuthenticated, logout } from "@/lib/adminAuth";
 import {
-  getProducts, addProduct, updateProduct, deleteProduct,
+  getProducts, addProduct, updateProduct, deleteProduct, uploadImage,
   CATEGORIES, type Product, type ProductCategory,
 } from "@/lib/productStore";
 import logoImage from "@/assets/logo-gate01.png";
