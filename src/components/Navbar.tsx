@@ -88,6 +88,13 @@ const Navbar = () => {
           >
             Ver catálogo
           </Link>
+          <Link
+            to="/admin"
+            onClick={() => setMobileOpen(false)}
+            className="mt-2 flex items-center justify-center gap-2 py-3 text-muted-foreground hover:text-secondary font-body text-sm uppercase tracking-wider transition-colors"
+          >
+            <UserCog className="w-4 h-4" /> Administración
+          </Link>
         </div>
       )}
     </nav>
