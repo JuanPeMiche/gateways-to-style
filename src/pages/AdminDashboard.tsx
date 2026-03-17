@@ -27,6 +27,7 @@ const AdminDashboard = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState<Product | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   // Form state
   const [name, setName] = useState("");
