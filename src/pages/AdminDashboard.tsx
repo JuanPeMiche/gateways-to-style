@@ -44,10 +44,12 @@ const AdminDashboard = () => {
       navigate("/admin", { replace: true });
       return;
     }
-    setProducts(getProducts());
+    getProducts().then(setProducts).catch(console.error);
   }, [navigate]);
 
-  const reload = useCallback(() => setProducts(getProducts()), []);
+  const reload = useCallback(() => {
+    getProducts().then(setProducts).catch(console.error);
+  }, []);
 
   const filtered = filter === "Todos" ? products : products.filter((p) => p.category === filter);
 
