@@ -15,10 +15,10 @@ const Catalogo = () => {
   const [hoverImageIdx, setHoverImageIdx] = useState(0);
 
   useEffect(() => {
-    const load = () => setProducts(getPublishedProducts());
+    const load = () => {
+      getPublishedProducts().then(setProducts).catch(console.error);
+    };
     load();
-    window.addEventListener("gate01_products_updated", load);
-    return () => window.removeEventListener("gate01_products_updated", load);
   }, []);
 
   // Cycle images on hover

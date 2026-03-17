@@ -7,7 +7,7 @@ import {
 import BulkUploadDialog from "@/components/BulkUploadDialog";
 import { isAuthenticated, logout } from "@/lib/adminAuth";
 import {
-  getProducts, addProduct, updateProduct, deleteProduct,
+  getProducts, addProduct, updateProduct, deleteProduct, uploadImage,
   CATEGORIES, type Product, type ProductCategory,
 } from "@/lib/productStore";
 import logoImage from "@/assets/logo-gate01.png";
@@ -44,10 +44,12 @@ const AdminDashboard = () => {
       navigate("/admin", { replace: true });
       return;
     }
-    setProducts(getProducts());
+    getProducts().then(setProducts).catch(console.error);
   }, [navigate]);
 
-  const reload = useCallback(() => setProducts(getProducts()), []);
+  const reload = useCallback(() => {
+    getProducts().then(setProducts).catch(console.error);
+  }, []);
 
   const filtered = filter === "Todos" ? products : products.filter((p) => p.category === filter);
 
@@ -85,9 +87,12 @@ const AdminDashboard = () => {
     setFormOpen(true);
   };
 
+  // For single product form, store pending File objects + existing URLs
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
-    const remaining = MAX_IMAGES - images.length;
+    const remaining = MAX_IMAGES - images.length - pendingFiles.length;
     const toProcess = Array.from(files).slice(0, remaining);
 
     toProcess.forEach((file) => {
@@ -96,9 +101,11 @@ const AdminDashboard = () => {
         return;
       }
       if (file.size > MAX_SIZE) {
-        toast({ title: "Archivo muy grande", description: "Máximo 5MB por imagen", variant: "destructive" });
+        toast({ title: "Archivo muy grande", description: "Máximo 10MB por imagen", variant: "destructive" });
         return;
       }
+      setPendingFiles((prev) => [...prev, file]);
+      // Show preview
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
@@ -110,6 +117,11 @@ const AdminDashboard = () => {
 
   const removeImage = (idx: number) => {
     setImages((prev) => prev.filter((_, i) => i !== idx));
+    // Remove corresponding pending file if it's a new file
+    const existingCount = editing ? editing.images.length : 0;
+    if (idx >= existingCount) {
+      setPendingFiles((prev) => prev.filter((_, i) => i !== (idx - existingCount)));
+    }
   };
 
   const validate = (): boolean => {
@@ -121,40 +133,71 @@ const AdminDashboard = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSave = () => {
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
     if (!validate()) return;
-    const data = {
-      name: name.trim(),
-      category,
-      description: description.trim(),
-      price: price ? Number(price) : null,
-      images,
-      visible,
-    };
-    if (editing) {
-      updateProduct(editing.id, data);
-      toast({ title: "Producto actualizado" });
-    } else {
-      addProduct(data);
-      toast({ title: "Producto agregado" });
+    setSaving(true);
+    try {
+      // Upload new files to storage
+      const uploadedUrls: string[] = [];
+      for (const file of pendingFiles) {
+        const url = await uploadImage(file);
+        uploadedUrls.push(url);
+      }
+
+      // Keep existing URLs (from editing) + new uploaded URLs
+      const existingUrls = editing ? images.slice(0, editing.images.length).filter((img) => img.startsWith("http")) : [];
+      const finalImages = [...existingUrls, ...uploadedUrls];
+
+      const data = {
+        name: name.trim(),
+        category,
+        description: description.trim(),
+        price: price ? Number(price) : null,
+        images: finalImages,
+        visible,
+      };
+      if (editing) {
+        await updateProduct(editing.id, data);
+        toast({ title: "Producto actualizado" });
+      } else {
+        await addProduct(data);
+        toast({ title: "Producto agregado" });
+      }
+      setFormOpen(false);
+      resetForm();
+      setPendingFiles([]);
+      reload();
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error al guardar", description: "Intentá de nuevo", variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
-    setFormOpen(false);
-    resetForm();
-    reload();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleting) return;
-    deleteProduct(deleting.id);
-    toast({ title: "Producto eliminado" });
-    setDeleting(null);
-    reload();
+    try {
+      await deleteProduct(deleting.id);
+      toast({ title: "Producto eliminado" });
+      setDeleting(null);
+      reload();
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error al eliminar", variant: "destructive" });
+    }
   };
 
-  const toggleVisibility = (p: Product) => {
-    updateProduct(p.id, { visible: !p.visible });
-    toast({ title: p.visible ? "Producto ocultado" : "Producto publicado" });
-    reload();
+  const toggleVisibility = async (p: Product) => {
+    try {
+      await updateProduct(p.id, { visible: !p.visible });
+      toast({ title: p.visible ? "Producto ocultado" : "Producto publicado" });
+      reload();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -384,7 +427,7 @@ const AdminDashboard = () => {
                 <p className="font-body text-sm text-muted-foreground">
                   Arrastrá imágenes o hacé clic para buscar
                 </p>
-                <p className="font-body text-xs text-muted-foreground/60 mt-1">JPG, PNG, WEBP — máx 5MB</p>
+                <p className="font-body text-xs text-muted-foreground/60 mt-1">JPG, PNG, WEBP — máx 50MB</p>
               </div>
               <input
                 ref={fileInputRef}
