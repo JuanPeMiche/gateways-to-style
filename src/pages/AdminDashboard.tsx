@@ -10,6 +10,7 @@ import {
   getProducts, addProduct, updateProduct, deleteProduct, uploadImage,
   CATEGORIES, type Product, type ProductCategory,
 } from "@/lib/productStore";
+import { compressImage, formatBytes } from "@/lib/imageCompressor";
 import logoImage from "@/assets/logo-gate01.png";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -139,10 +140,14 @@ const AdminDashboard = () => {
     if (!validate()) return;
     setSaving(true);
     try {
-      // Upload new files to storage
+      // Compress and upload new files to storage
       const uploadedUrls: string[] = [];
       for (const file of pendingFiles) {
-        const url = await uploadImage(file);
+        const { file: compressed, originalSize, compressedSize } = await compressImage(file);
+        if (compressedSize < originalSize) {
+          toast({ title: `Imagen optimizada: ${formatBytes(compressedSize)}`, description: `Original: ${formatBytes(originalSize)}` });
+        }
+        const url = await uploadImage(compressed);
         uploadedUrls.push(url);
       }
 

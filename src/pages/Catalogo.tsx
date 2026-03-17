@@ -1,106 +1,112 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Search, Settings, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, SearchX, Loader2 } from "lucide-react";
 import GateLogo from "@/components/GateLogo";
-import {
-  getPublishedProductsPaginated,
-  getCategoryCounts,
-  CATEGORIES,
-  PAGE_SIZE,
-  type Product,
-} from "@/lib/productStore";
+import ProductCard from "@/components/catalog/ProductCard";
+import ScrollToTop from "@/components/catalog/ScrollToTop";
+import { supabase } from "@/integrations/supabase/client";
+import { CATEGORIES, type Product } from "@/lib/productStore";
 
 const allFilters = ["Todos", ...CATEGORIES] as const;
+const BATCH_SIZE = 24;
 
 const Catalogo = () => {
   const [searchParams] = useSearchParams();
   const initialCat = searchParams.get("cat") || "Todos";
+
   const [active, setActive] = useState(initialCat);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [initialLoad, setInitialLoad] = useState(true);
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [hoverImageIdx, setHoverImageIdx] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Debounce search
+  // Debounce search — 250ms
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 350);
+    const t = setTimeout(() => setDebouncedSearch(search), 250);
     return () => clearTimeout(t);
   }, [search]);
 
-  // Load counts once
+  // Load ALL published products once
   useEffect(() => {
-    getCategoryCounts().then(setCounts).catch(console.error);
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("visible", true)
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setAllProducts(data as Product[]);
+      }
+      setInitialLoad(false);
+    };
+    load();
   }, []);
 
-  // Reset when filter or search changes
+  // O(1) category grouping
+  const categoryMap = useMemo(() => {
+    const map: Record<string, Product[]> = { Todos: allProducts };
+    for (const cat of CATEGORIES) map[cat] = [];
+    for (const p of allProducts) {
+      if (map[p.category]) map[p.category].push(p);
+    }
+    return map;
+  }, [allProducts]);
+
+  // Category counts
+  const counts = useMemo(() => {
+    const c: Record<string, number> = {};
+    for (const [key, arr] of Object.entries(categoryMap)) {
+      c[key] = arr.length;
+    }
+    return c;
+  }, [categoryMap]);
+
+  // Filtered products — memoized
+  const filtered = useMemo(() => {
+    const base = categoryMap[active] || allProducts;
+    if (!debouncedSearch.trim()) return base;
+    const q = debouncedSearch.toLowerCase();
+    return base.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+    );
+  }, [categoryMap, active, debouncedSearch, allProducts]);
+
+  // Reset visible count when filter/search changes
   useEffect(() => {
-    setProducts([]);
-    setPage(0);
-    setHasMore(true);
-    setInitialLoad(true);
+    setVisibleCount(BATCH_SIZE);
   }, [active, debouncedSearch]);
 
-  // Fetch page
-  const fetchPage = useCallback(
-    async (pageNum: number) => {
-      setLoading(true);
-      try {
-        const { products: newProducts, hasMore: more } =
-          await getPublishedProductsPaginated(
-            pageNum,
-            active,
-            debouncedSearch || undefined
-          );
-        setProducts((prev) =>
-          pageNum === 0 ? newProducts : [...prev, ...newProducts]
-        );
-        setHasMore(more);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-        setInitialLoad(false);
-      }
-    },
-    [active, debouncedSearch]
-  );
+  // Progressive load via intersection observer
+  const hasMore = visibleCount < filtered.length;
 
   useEffect(() => {
-    fetchPage(page);
-  }, [page, fetchPage]);
-
-  // Infinite scroll observer
-  useEffect(() => {
-    if (!sentinelRef.current) return;
+    const el = sentinelRef.current;
+    if (!el) return;
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
-          setPage((p) => p + 1);
+      ([entry]) => {
+        if (entry.isIntersecting && hasMore) {
+          setVisibleCount((v) => Math.min(v + BATCH_SIZE, filtered.length));
         }
       },
       { rootMargin: "400px" }
     );
-    observer.observe(sentinelRef.current);
+    observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, loading]);
+  }, [hasMore, filtered.length]);
 
-  // Cycle images on hover
-  useEffect(() => {
-    if (!hoveredId) return;
-    const product = products.find((p) => p.id === hoveredId);
-    if (!product || product.images.length <= 1) return;
-    const interval = setInterval(() => {
-      setHoverImageIdx((prev) => (prev + 1) % product.images.length);
-    }, 1200);
-    return () => clearInterval(interval);
-  }, [hoveredId, products]);
+  const visibleProducts = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
+  );
+
+  const handleCategoryChange = useCallback((cat: string) => {
+    setActive(cat);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,7 +134,7 @@ const Catalogo = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12">
+      <div id="catalog-top" className="container mx-auto px-4 py-12">
         <h1 className="font-display text-5xl md:text-7xl text-center mb-4 text-foreground">
           Nuestro <span className="text-primary">Catálogo</span>
         </h1>
@@ -156,7 +162,7 @@ const Catalogo = () => {
             return (
               <button
                 key={cat}
-                onClick={() => setActive(cat)}
+                onClick={() => handleCategoryChange(cat)}
                 className={`px-5 py-2 font-body font-bold text-sm uppercase tracking-wider rounded-full border transition-all duration-200 ${
                   active === cat
                     ? "bg-primary text-primary-foreground border-primary"
@@ -172,109 +178,49 @@ const Catalogo = () => {
           })}
         </div>
 
-        {/* Initial loading */}
+        {/* Content */}
         {initialLoad ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : products.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="text-center py-20">
-            <Settings className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
+            <SearchX className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
             <p className="font-body text-muted-foreground text-lg">
-              {debouncedSearch
-                ? `No se encontraron productos para "${debouncedSearch}"`
-                : "Próximamente productos en esta categoría"}
+              No encontramos productos para tu búsqueda
             </p>
           </div>
         ) : (
           <>
             {/* Product count */}
             <p className="text-center text-muted-foreground font-body text-sm mb-6">
-              {products.length}
-              {hasMore ? "+" : ""} productos
+              Mostrando {Math.min(visibleCount, filtered.length)} de{" "}
+              {filtered.length} productos
             </p>
 
-            {/* Product grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {products.map((item) => {
-                const isHovered = hoveredId === item.id;
-                const imgIdx = isHovered
-                  ? hoverImageIdx % Math.max(item.images.length, 1)
-                  : 0;
-                return (
-                  <div
-                    key={item.id}
-                    className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02]"
-                    onMouseEnter={() => {
-                      setHoveredId(item.id);
-                      setHoverImageIdx(0);
-                    }}
-                    onMouseLeave={() => setHoveredId(null)}
-                  >
-                    <div className="relative aspect-square overflow-hidden bg-muted">
-                      {item.images.length > 0 ? (
-                        <>
-                          <img
-                            src={item.images[imgIdx]}
-                            alt={item.name}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                          {item.images.length > 1 && (
-                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                              {item.images.map((_, di) => (
-                                <span
-                                  key={di}
-                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                    di === imgIdx
-                                      ? "bg-primary"
-                                      : "bg-white/40"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Settings className="w-8 h-8 text-muted-foreground/20" />
-                        </div>
-                      )}
-                      <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-primary-foreground font-body text-[9px] font-bold uppercase tracking-wider rounded-full">
-                        {item.category}
-                      </span>
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-display text-sm text-foreground leading-tight mb-1 truncate">
-                        {item.name}
-                      </h3>
-                      {item.description && (
-                        <p className="font-body text-muted-foreground text-xs line-clamp-2 mb-1">
-                          {item.description}
-                        </p>
-                      )}
-                      {item.price !== null && (
-                        <p className="font-body text-secondary font-bold text-sm">
-                          ${item.price} UYU
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            {/* Product grid with fade transition */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-opacity duration-150">
+              {visibleProducts.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  item={item}
+                  searchQuery={debouncedSearch}
+                />
+              ))}
             </div>
 
             {/* Infinite scroll sentinel */}
             <div ref={sentinelRef} className="h-4" />
 
-            {loading && !initialLoad && (
+            {hasMore && (
               <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <p className="font-body text-sm text-muted-foreground animate-pulse">
+                  Cargando más productos...
+                </p>
               </div>
             )}
 
-            {!hasMore && products.length > 0 && (
+            {!hasMore && filtered.length > 0 && (
               <p className="text-center text-muted-foreground/50 font-body text-sm py-8">
                 — Fin del catálogo —
               </p>
@@ -301,6 +247,8 @@ const Catalogo = () => {
           </a>
         </div>
       </div>
+
+      <ScrollToTop targetId="catalog-top" />
     </div>
   );
 };
