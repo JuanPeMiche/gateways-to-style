@@ -133,40 +133,71 @@ const AdminDashboard = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSave = () => {
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
     if (!validate()) return;
-    const data = {
-      name: name.trim(),
-      category,
-      description: description.trim(),
-      price: price ? Number(price) : null,
-      images,
-      visible,
-    };
-    if (editing) {
-      updateProduct(editing.id, data);
-      toast({ title: "Producto actualizado" });
-    } else {
-      addProduct(data);
-      toast({ title: "Producto agregado" });
+    setSaving(true);
+    try {
+      // Upload new files to storage
+      const uploadedUrls: string[] = [];
+      for (const file of pendingFiles) {
+        const url = await uploadImage(file);
+        uploadedUrls.push(url);
+      }
+
+      // Keep existing URLs (from editing) + new uploaded URLs
+      const existingUrls = editing ? images.slice(0, editing.images.length).filter((img) => img.startsWith("http")) : [];
+      const finalImages = [...existingUrls, ...uploadedUrls];
+
+      const data = {
+        name: name.trim(),
+        category,
+        description: description.trim(),
+        price: price ? Number(price) : null,
+        images: finalImages,
+        visible,
+      };
+      if (editing) {
+        await updateProduct(editing.id, data);
+        toast({ title: "Producto actualizado" });
+      } else {
+        await addProduct(data);
+        toast({ title: "Producto agregado" });
+      }
+      setFormOpen(false);
+      resetForm();
+      setPendingFiles([]);
+      reload();
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error al guardar", description: "Intentá de nuevo", variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
-    setFormOpen(false);
-    resetForm();
-    reload();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleting) return;
-    deleteProduct(deleting.id);
-    toast({ title: "Producto eliminado" });
-    setDeleting(null);
-    reload();
+    try {
+      await deleteProduct(deleting.id);
+      toast({ title: "Producto eliminado" });
+      setDeleting(null);
+      reload();
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error al eliminar", variant: "destructive" });
+    }
   };
 
-  const toggleVisibility = (p: Product) => {
-    updateProduct(p.id, { visible: !p.visible });
-    toast({ title: p.visible ? "Producto ocultado" : "Producto publicado" });
-    reload();
+  const toggleVisibility = async (p: Product) => {
+    try {
+      await updateProduct(p.id, { visible: !p.visible });
+      toast({ title: p.visible ? "Producto ocultado" : "Producto publicado" });
+      reload();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
