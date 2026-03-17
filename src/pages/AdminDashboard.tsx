@@ -427,7 +427,7 @@ const AdminDashboard = () => {
                 <p className="font-body text-sm text-muted-foreground">
                   Arrastrá imágenes o hacé clic para buscar
                 </p>
-                <p className="font-body text-xs text-muted-foreground/60 mt-1">JPG, PNG, WEBP — máx 5MB</p>
+                <p className="font-body text-xs text-muted-foreground/60 mt-1">JPG, PNG, WEBP — máx 50MB</p>
               </div>
               <input
                 ref={fileInputRef}
