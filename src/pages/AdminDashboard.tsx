@@ -9,7 +9,7 @@ import {
   getProducts, addProduct, updateProduct, deleteProduct,
   CATEGORIES, type Product, type ProductCategory,
 } from "@/lib/productStore";
-import logoImage from "@/assets/logo-gate01.jpg";
+import logoImage from "@/assets/logo-gate01.png";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,

@@ -1,4 +1,4 @@
-import logoImage from "@/assets/logo-gate01.jpg";
+import logoImage from "@/assets/logo-gate01.png";
 
 const GateLogo = ({ className = "" }: { className?: string }) => (
   <a href="#inicio" className={`flex items-center group ${className}`}>
