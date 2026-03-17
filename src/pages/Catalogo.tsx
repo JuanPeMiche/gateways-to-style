@@ -1,48 +1,67 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Search, Settings } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import GateLogo from "@/components/GateLogo";
+import { getPublishedProducts, CATEGORIES, type Product } from "@/lib/productStore";
 
-import productRemeras from "@/assets/product-remeras.jpg";
-import productTazas from "@/assets/product-tazas.jpg";
-import productPortarretratos from "@/assets/product-portarretratos.jpg";
-import productOtros from "@/assets/product-otros.jpg";
-import catalogHoodie from "@/assets/catalog-hoodie.jpg";
-import catalogTotebag from "@/assets/catalog-totebag.jpg";
-import catalogStickers from "@/assets/catalog-stickers.jpg";
-import catalogPhonecase from "@/assets/catalog-phonecase.jpg";
-
-const categories = ["Todos", "Remeras", "Tazas", "Portarretratos", "Accesorios"];
-
-const catalogItems = [
-  { name: "Remera Neon V", category: "Remeras", image: productRemeras, description: "Diseño cyberpunk con detalles neón" },
-  { name: "Taza Anime Girl", category: "Tazas", image: productTazas, description: "Ilustración anime en taza cerámica" },
-  { name: "Portarretrato LED", category: "Portarretratos", image: productPortarretratos, description: "Marco con bordes iluminados violeta" },
-  { name: "Pack Variado", category: "Accesorios", image: productOtros, description: "Stickers, fundas y más con diseño propio" },
-  { name: "Hoodie Pentagram", category: "Remeras", image: catalogHoodie, description: "Hoodie con diseño cyberpunk exclusivo" },
-  { name: "Tote Bag Anime", category: "Accesorios", image: catalogTotebag, description: "Bolsa de tela con ilustración anime" },
-  { name: "Stickers Pack", category: "Accesorios", image: catalogStickers, description: "Pack de stickers anime coleccionables" },
-  { name: "Funda Neon", category: "Accesorios", image: catalogPhonecase, description: "Funda de celular con arte neón" },
-];
+const allFilters = ["Todos", ...CATEGORIES] as const;
 
 const Catalogo = () => {
   const [active, setActive] = useState("Todos");
   const [search, setSearch] = useState("");
-  const filtered = catalogItems
+  const [products, setProducts] = useState<Product[]>([]);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [hoverImageIdx, setHoverImageIdx] = useState(0);
+
+  useEffect(() => {
+    const load = () => setProducts(getPublishedProducts());
+    load();
+    window.addEventListener("gate01_products_updated", load);
+    return () => window.removeEventListener("gate01_products_updated", load);
+  }, []);
+
+  // Cycle images on hover
+  useEffect(() => {
+    if (!hoveredId) return;
+    const product = products.find((p) => p.id === hoveredId);
+    if (!product || product.images.length <= 1) return;
+    const interval = setInterval(() => {
+      setHoverImageIdx((prev) => (prev + 1) % product.images.length);
+    }, 1200);
+    return () => clearInterval(interval);
+  }, [hoveredId, products]);
+
+  const filtered = products
     .filter((i) => active === "Todos" || i.category === active)
     .filter((i) => {
       if (!search.trim()) return true;
       const q = search.toLowerCase();
-      return i.name.toLowerCase().includes(q) || i.description.toLowerCase().includes(q) || i.category.toLowerCase().includes(q);
+      return (
+        i.name.toLowerCase().includes(q) ||
+        i.description.toLowerCase().includes(q) ||
+        i.category.toLowerCase().includes(q)
+      );
     });
+
+  // Check if a category has published products
+  const categoryHasProducts = (cat: string) =>
+    cat === "Todos"
+      ? products.length > 0
+      : products.some((p) => p.category === cat);
+
+  const showEmpty =
+    active !== "Todos" && !categoryHasProducts(active) && !search.trim();
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-primary/30 bg-background/80 backdrop-blur-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-secondary transition-colors font-body font-semibold uppercase tracking-wider text-sm">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-muted-foreground hover:text-secondary transition-colors font-body font-semibold uppercase tracking-wider text-sm"
+          >
             <ArrowLeft size={18} />
             Volver
           </Link>
@@ -87,13 +106,13 @@ const Catalogo = () => {
         {/* Category filters */}
         <ScrollReveal delay={100}>
           <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {categories.map((cat) => (
+            {allFilters.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActive(cat)}
-                className={`px-5 py-2 font-body font-bold text-sm uppercase tracking-wider border transition-all duration-200 ${
+                className={`px-5 py-2 font-body font-bold text-sm uppercase tracking-wider rounded-full border transition-all duration-200 ${
                   active === cat
-                    ? "bg-primary text-primary-foreground border-primary glow-border"
+                    ? "bg-primary text-primary-foreground border-primary"
                     : "bg-transparent text-muted-foreground border-border hover:border-secondary hover:text-secondary"
                 }`}
               >
@@ -103,35 +122,85 @@ const Catalogo = () => {
           </div>
         </ScrollReveal>
 
-        {/* Product grid */}
-        {filtered.length === 0 ? (
+        {/* Empty state for category */}
+        {showEmpty ? (
+          <div className="text-center py-20">
+            <Settings className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30 animate-pulse" />
+            <p className="font-body text-muted-foreground text-lg">
+              Próximamente productos en esta categoría
+            </p>
+          </div>
+        ) : filtered.length === 0 && search.trim() ? (
           <div className="text-center py-16">
-            <p className="font-body text-muted-foreground text-lg">No se encontraron productos para "{search}"</p>
+            <p className="font-body text-muted-foreground text-lg">
+              No se encontraron productos para "{search}"
+            </p>
+          </div>
+        ) : filtered.length === 0 && active === "Todos" ? (
+          <div className="text-center py-20">
+            <Settings className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30 animate-pulse" />
+            <p className="font-body text-muted-foreground text-lg">
+              Próximamente productos disponibles
+            </p>
           </div>
         ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filtered.map((item, i) => (
-            <ScrollReveal key={item.name} delay={i * 80}>
-              <div className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02]">
-                <div className="aspect-square overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="p-5">
-                  <span className="inline-block font-body text-xs uppercase tracking-wider text-secondary mb-2">
-                    {item.category}
-                  </span>
-                  <h3 className="font-display text-xl text-foreground mb-1">{item.name}</h3>
-                  <p className="font-body text-muted-foreground text-sm">{item.description}</p>
-                </div>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((item, i) => {
+              const isHovered = hoveredId === item.id;
+              const imgIdx = isHovered ? hoverImageIdx % Math.max(item.images.length, 1) : 0;
+              return (
+                <ScrollReveal key={item.id} delay={i * 80}>
+                  <div
+                    className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02]"
+                    onMouseEnter={() => { setHoveredId(item.id); setHoverImageIdx(0); }}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    <div className="relative h-[260px] overflow-hidden bg-muted">
+                      {item.images.length > 0 ? (
+                        <>
+                          <img
+                            src={item.images[imgIdx]}
+                            alt={item.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                          {item.images.length > 1 && (
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                              {item.images.map((_, di) => (
+                                <span
+                                  key={di}
+                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                    di === imgIdx ? "bg-primary" : "bg-white/40"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-[hsl(0_0%_10%)]">
+                          <Settings className="w-10 h-10 text-muted-foreground/20" />
+                        </div>
+                      )}
+                      {/* Category badge */}
+                      <span className="absolute top-3 left-3 px-2.5 py-0.5 bg-primary text-primary-foreground font-body text-[10px] font-bold uppercase tracking-wider rounded-full">
+                        {item.category}
+                      </span>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-display text-xl text-foreground mb-1">{item.name}</h3>
+                      {item.description && (
+                        <p className="font-body text-muted-foreground text-sm mb-2">{item.description}</p>
+                      )}
+                      {item.price !== null && (
+                        <p className="font-body text-secondary font-bold">${item.price} UYU</p>
+                      )}
+                    </div>
+                  </div>
+                </ScrollReveal>
+              );
+            })}
+          </div>
         )}
 
         {/* CTA */}
