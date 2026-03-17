@@ -1,30 +1,37 @@
 import { Link } from "react-router-dom";
-import productRemeras from "@/assets/product-remeras.jpg";
-import productTazas from "@/assets/product-tazas.jpg";
-import productPortarretratos from "@/assets/product-portarretratos.jpg";
-import productOtros from "@/assets/product-otros.jpg";
+import { Shirt, ScrollText, Monitor, Frame, Package, Gift } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
 
 const products = [
   {
     name: "Remeras",
     description: "Diseños anime, gaming y arte urbano impresos en remeras de alta calidad.",
-    image: productRemeras,
+    icon: Shirt,
   },
   {
-    name: "Tazas",
-    description: "Tazas personalizadas con los diseños más creativos para tu día a día.",
-    image: productTazas,
+    name: "Scrolls",
+    description: "Impresiones artísticas en formato scroll para decorar tus espacios.",
+    icon: ScrollText,
   },
   {
-    name: "Portarretratos",
-    description: "Enmarcá tus momentos con estilos únicos y personalizados.",
-    image: productPortarretratos,
+    name: "Mousepads",
+    description: "Mousepads personalizados con diseños únicos para tu setup.",
+    icon: Monitor,
   },
   {
-    name: "Otros Productos",
-    description: "Stickers, fundas, accesorios y mucho más con diseño propio.",
-    image: productOtros,
+    name: "Cuadros de Cerámica",
+    description: "Arte impreso en cerámica con acabados de alta calidad.",
+    icon: Frame,
+  },
+  {
+    name: "Combos",
+    description: "Packs especiales combinando nuestros mejores productos.",
+    icon: Package,
+  },
+  {
+    name: "Box Regalo",
+    description: "Cajas de regalo listas para sorprender con estilo propio.",
+    icon: Gift,
   },
 ];
 
@@ -40,17 +47,12 @@ const ProductsSection = () => (
         </p>
       </ScrollReveal>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product, i) => (
           <ScrollReveal key={product.name} delay={i * 100}>
             <div className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02]">
-              <div className="aspect-square overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  loading="lazy"
-                />
+              <div className="aspect-square overflow-hidden bg-[#1a1a1a] flex items-center justify-center">
+                <product.icon className="w-16 h-16 text-muted-foreground/40 group-hover:text-primary transition-colors duration-300" />
               </div>
               <div className="p-5">
                 <h3 className="font-display text-2xl text-foreground mb-2">{product.name}</h3>
