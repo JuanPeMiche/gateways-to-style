@@ -128,7 +128,7 @@ const BulkUploadDialog = ({ open, onOpenChange, onComplete }: BulkUploadDialogPr
     let created = 0;
     for (let i = 0; i < pending.length; i++) {
       try {
-        const dataUrl = await readFileAsDataURL(pending[i].file);
+        const dataUrl = await compressImage(pending[i].file);
         addProduct({
           name: pending[i].name,
           category,
