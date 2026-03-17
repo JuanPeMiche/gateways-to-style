@@ -87,9 +87,12 @@ const AdminDashboard = () => {
     setFormOpen(true);
   };
 
+  // For single product form, store pending File objects + existing URLs
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
-    const remaining = MAX_IMAGES - images.length;
+    const remaining = MAX_IMAGES - images.length - pendingFiles.length;
     const toProcess = Array.from(files).slice(0, remaining);
 
     toProcess.forEach((file) => {
@@ -98,9 +101,11 @@ const AdminDashboard = () => {
         return;
       }
       if (file.size > MAX_SIZE) {
-        toast({ title: "Archivo muy grande", description: "Máximo 5MB por imagen", variant: "destructive" });
+        toast({ title: "Archivo muy grande", description: "Máximo 10MB por imagen", variant: "destructive" });
         return;
       }
+      setPendingFiles((prev) => [...prev, file]);
+      // Show preview
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
@@ -112,6 +117,11 @@ const AdminDashboard = () => {
 
   const removeImage = (idx: number) => {
     setImages((prev) => prev.filter((_, i) => i !== idx));
+    // Remove corresponding pending file if it's a new file
+    const existingCount = editing ? editing.images.length : 0;
+    if (idx >= existingCount) {
+      setPendingFiles((prev) => prev.filter((_, i) => i !== (idx - existingCount)));
+    }
   };
 
   const validate = (): boolean => {
