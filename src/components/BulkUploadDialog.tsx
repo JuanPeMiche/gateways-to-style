@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 
-const MAX_BULK = 30;
-const MAX_SIZE = 10 * 1024 * 1024;
+const MAX_BULK = 50;
+const MAX_SIZE = 50 * 1024 * 1024; // 50MB per file with cloud storage
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
 
 interface BulkUploadDialogProps {
