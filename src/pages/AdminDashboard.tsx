@@ -301,7 +301,7 @@ const AdminDashboard = () => {
                     <td className="py-3 pr-4">
                       <div className="w-12 h-12 rounded bg-muted flex items-center justify-center overflow-hidden">
                         {p.images.length > 0 ? (
-                          <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                          <img src={ImageSize.THUMB(p.images[0])} alt={p.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                         ) : (
                           <ImageIcon className="w-5 h-5 text-muted-foreground/40" />
                         )}
