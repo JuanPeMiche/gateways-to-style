@@ -348,6 +348,11 @@ const AdminDashboard = () => {
             </table>
           </div>
         )}
+
+        {/* Category covers */}
+        <div className="mt-12">
+          <CategoryCoversManager />
+        </div>
       </div>
 
       {/* Add/Edit modal */}

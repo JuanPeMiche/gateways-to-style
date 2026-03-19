@@ -41,22 +41,40 @@ const ProductsSection = () => {
   const [images, setImages] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    // Fetch one image per category
     const fetchImages = async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("category, images")
-        .eq("visible", true)
-        .order("created_at", { ascending: false });
-
-      if (!data) return;
+      // First try custom covers from category_covers table
+      const { data: coverData } = await supabase
+        .from("category_covers")
+        .select("category, image_url");
 
       const map: Record<string, string> = {};
-      for (const row of data) {
-        if (!map[row.category] && row.images?.length > 0) {
-          map[row.category] = row.images[0];
+      if (coverData) {
+        for (const row of coverData) {
+          map[row.category] = row.image_url;
         }
       }
+
+      // Fill remaining categories with first product image as fallback
+      const missingCategories = categoryMeta
+        .map((c) => c.name)
+        .filter((name) => !map[name]);
+
+      if (missingCategories.length > 0) {
+        const { data } = await supabase
+          .from("products")
+          .select("category, images")
+          .eq("visible", true)
+          .order("created_at", { ascending: false });
+
+        if (data) {
+          for (const row of data) {
+            if (missingCategories.includes(row.category) && !map[row.category] && row.images?.length > 0) {
+              map[row.category] = row.images[0];
+            }
+          }
+        }
+      }
+
       setImages(map);
     };
     fetchImages();
