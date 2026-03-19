@@ -5,6 +5,7 @@ import {
   Upload, X, Image as ImageIcon, UploadCloud,
 } from "lucide-react";
 import BulkUploadDialog from "@/components/BulkUploadDialog";
+import CategoryCoversManager from "@/components/CategoryCoversManager";
 import { isAuthenticated, logout } from "@/lib/adminAuth";
 import {
   getProducts, addProduct, updateProduct, deleteProduct, uploadImage,
@@ -347,6 +348,11 @@ const AdminDashboard = () => {
             </table>
           </div>
         )}
+
+        {/* Category covers */}
+        <div className="mt-12">
+          <CategoryCoversManager />
+        </div>
       </div>
 
       {/* Add/Edit modal */}

@@ -13,7 +13,7 @@ const HeroSection = () => (
       <h1 className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-foreground leading-none mb-6 text-glow">
         Llevá tu estilo
         <br />
-        <span className="text-secondary">al límite</span>
+        <span className="text-primary">al límite</span>
       </h1>
       <p className="font-body text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-10 font-medium">
         Remeras, tazas, portarretratos y más — diseños únicos con envíos a todo Uruguay
