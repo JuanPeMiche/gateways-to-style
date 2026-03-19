@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES } from "@/lib/productStore";
 import { uploadImage } from "@/lib/productStore";
