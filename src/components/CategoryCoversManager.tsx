@@ -5,7 +5,6 @@ import { CATEGORIES } from "@/lib/productStore";
 import { uploadImage } from "@/lib/productStore";
 import { compressImage, formatBytes } from "@/lib/imageCompressor";
 import { toast } from "@/hooks/use-toast";
-import { ImageSize } from "@/lib/imageOptimizer";
 
 const CategoryCoversManager = () => {
   const [covers, setCovers] = useState<Record<string, string>>({});
@@ -129,7 +128,7 @@ const CategoryCoversManager = () => {
             <div key={cat} className="border border-border rounded-lg overflow-hidden bg-card">
               <div className="relative h-44 bg-muted flex items-center justify-center">
                 {displayImg ? (
-                  <img src={ImageSize.ADMIN_COVER(displayImg)} alt={cat} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                  <img src={displayImg} alt={cat} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 ) : (
                   <div className="text-muted-foreground/40 flex flex-col items-center gap-1">
                     <ImageIcon className="w-10 h-10" />

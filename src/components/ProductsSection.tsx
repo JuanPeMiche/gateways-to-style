@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { Shirt, ScrollText, Monitor, Frame, Package, Gift } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
 import { supabase } from "@/integrations/supabase/client";
-import { ImageSize } from "@/lib/imageOptimizer";
 
 const categoryMeta = [
   {
@@ -113,7 +112,7 @@ const ProductsSection = () => {
                   <div className="flex-1 min-h-[220px] overflow-hidden bg-muted flex items-center justify-center relative">
                     {img ? (
                       <img
-                        src={ImageSize.COVER(img)}
+                        src={img}
                         alt={product.name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
