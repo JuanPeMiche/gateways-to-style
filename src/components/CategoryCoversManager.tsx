@@ -129,7 +129,7 @@ const CategoryCoversManager = () => {
             <div key={cat} className="border border-border rounded-lg overflow-hidden bg-card">
               <div className="relative h-44 bg-muted flex items-center justify-center">
                 {displayImg ? (
-                  <img src={displayImg} alt={cat} className="w-full h-full object-cover" />
+                  <img src={ImageSize.ADMIN_COVER(displayImg)} alt={cat} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 ) : (
                   <div className="text-muted-foreground/40 flex flex-col items-center gap-1">
                     <ImageIcon className="w-10 h-10" />
