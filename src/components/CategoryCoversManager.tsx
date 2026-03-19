@@ -5,6 +5,7 @@ import { CATEGORIES } from "@/lib/productStore";
 import { uploadImage } from "@/lib/productStore";
 import { compressImage, formatBytes } from "@/lib/imageCompressor";
 import { toast } from "@/hooks/use-toast";
+import { ImageSize } from "@/lib/imageOptimizer";
 
 const CategoryCoversManager = () => {
   const [covers, setCovers] = useState<Record<string, string>>({});
