@@ -56,6 +56,8 @@ const ProductCard = memo(({ item, searchQuery }: ProductCardProps) => {
               src={currentImg}
               alt={item.name}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              preset="CARD_MD"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             />
             {item.images.length > 1 && hovered && (
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
