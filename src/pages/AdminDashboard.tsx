@@ -12,7 +12,6 @@ import {
   CATEGORIES, type Product, type ProductCategory,
 } from "@/lib/productStore";
 import { compressImage, formatBytes } from "@/lib/imageCompressor";
-import { ImageSize } from "@/lib/imageOptimizer";
 import logoImage from "@/assets/logo-gate01.png";
 import { toast } from "@/hooks/use-toast";
 import {
