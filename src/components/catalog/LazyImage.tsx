@@ -1,3 +1,4 @@
+// Lazy image component with IntersectionObserver
 import { useState, useRef, useEffect } from "react";
 
 interface LazyImageProps {

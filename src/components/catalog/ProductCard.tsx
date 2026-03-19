@@ -1,3 +1,4 @@
+// Memoized product card component
 import { memo, useState, useEffect, useCallback } from "react";
 import { Settings } from "lucide-react";
 import LazyImage from "./LazyImage";
