@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo, forwardRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface LazyImageProps {
   src: string;
@@ -6,14 +6,13 @@ interface LazyImageProps {
   className?: string;
 }
 
-const LazyImage = memo(forwardRef<HTMLDivElement, LazyImageProps>(({ src, alt, className = "" }, forwardedRef) => {
+const LazyImage = ({ src, alt, className = "" }: LazyImageProps) => {
   const [loaded, setLoaded] = useState(false);
   const [inView, setInView] = useState(false);
-  const localRef = useRef<HTMLDivElement>(null);
-  const ref = (forwardedRef as React.RefObject<HTMLDivElement>) || localRef;
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = (ref as React.RefObject<HTMLDivElement>).current;
+    const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -30,7 +29,6 @@ const LazyImage = memo(forwardRef<HTMLDivElement, LazyImageProps>(({ src, alt, c
 
   return (
     <div ref={ref} className="w-full h-full relative">
-      {/* Shimmer skeleton */}
       {!loaded && (
         <div className="absolute inset-0 animate-shimmer rounded" />
       )}
@@ -46,7 +44,6 @@ const LazyImage = memo(forwardRef<HTMLDivElement, LazyImageProps>(({ src, alt, c
       )}
     </div>
   );
-}));
+};
 
-LazyImage.displayName = "LazyImage";
 export default LazyImage;

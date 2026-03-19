@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback, forwardRef } from "react";
+import { memo, useState, useEffect, useCallback } from "react";
 import { Settings } from "lucide-react";
 import LazyImage from "./LazyImage";
 import type { Product } from "@/lib/productStore";
@@ -23,7 +23,7 @@ function highlightMatch(text: string, query: string) {
   );
 }
 
-const ProductCard = memo(forwardRef<HTMLDivElement, ProductCardProps>(({ item, searchQuery }, ref) => {
+const ProductCard = memo(({ item, searchQuery }: ProductCardProps) => {
   const [hovered, setHovered] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
 
@@ -45,7 +45,6 @@ const ProductCard = memo(forwardRef<HTMLDivElement, ProductCardProps>(({ item, s
 
   return (
     <div
-      ref={ref}
       className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02]"
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
@@ -97,7 +96,7 @@ const ProductCard = memo(forwardRef<HTMLDivElement, ProductCardProps>(({ item, s
       </div>
     </div>
   );
-}));
+});
 
 ProductCard.displayName = "ProductCard";
 export default ProductCard;
