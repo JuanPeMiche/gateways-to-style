@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useCallback } from "react";
+import { memo, useState, useEffect, useCallback, forwardRef } from "react";
 import { Settings } from "lucide-react";
 import LazyImage from "./LazyImage";
 import type { Product } from "@/lib/productStore";
@@ -23,7 +23,7 @@ function highlightMatch(text: string, query: string) {
   );
 }
 
-const ProductCard = memo(({ item, searchQuery }: ProductCardProps) => {
+const ProductCard = memo(forwardRef<HTMLDivElement, ProductCardProps>(({ item, searchQuery }, ref) => {
   const [hovered, setHovered] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
 
@@ -45,6 +45,7 @@ const ProductCard = memo(({ item, searchQuery }: ProductCardProps) => {
 
   return (
     <div
+      ref={ref}
       className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02]"
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
@@ -56,8 +57,6 @@ const ProductCard = memo(({ item, searchQuery }: ProductCardProps) => {
               src={currentImg}
               alt={item.name}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              preset="CARD_MD"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
             />
             {item.images.length > 1 && hovered && (
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
@@ -98,7 +97,7 @@ const ProductCard = memo(({ item, searchQuery }: ProductCardProps) => {
       </div>
     </div>
   );
-});
+}));
 
 ProductCard.displayName = "ProductCard";
 export default ProductCard;
