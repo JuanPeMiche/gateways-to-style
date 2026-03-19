@@ -1,24 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Upload, X, Trash2, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES } from "@/lib/productStore";
 import { uploadImage } from "@/lib/productStore";
 import { compressImage, formatBytes } from "@/lib/imageCompressor";
 import { toast } from "@/hooks/use-toast";
 
-interface CategoryCover {
-  category: string;
-  image_url: string;
-}
-
 const CategoryCoversManager = () => {
   const [covers, setCovers] = useState<Record<string, string>>({});
+  const [fallbacks, setFallbacks] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCovers();
+    fetchFallbacks();
   }, []);
 
   const fetchCovers = async () => {
@@ -31,6 +28,23 @@ const CategoryCoversManager = () => {
         map[row.category] = row.image_url;
       }
       setCovers(map);
+    }
+  };
+
+  const fetchFallbacks = async () => {
+    const { data } = await supabase
+      .from("products")
+      .select("category, images")
+      .eq("visible", true)
+      .order("created_at", { ascending: false });
+    if (data) {
+      const map: Record<string, string> = {};
+      for (const row of data) {
+        if (!map[row.category] && row.images?.length > 0) {
+          map[row.category] = row.images[0];
+        }
+      }
+      setFallbacks(map);
     }
   };
 
@@ -57,7 +71,6 @@ const CategoryCoversManager = () => {
       }
       const url = await uploadImage(compressed);
 
-      // Upsert into category_covers
       const { error } = await supabase
         .from("category_covers")
         .upsert({ category: activeCategory, image_url: url, updated_at: new Date().toISOString() }, { onConflict: "category" });
@@ -84,17 +97,16 @@ const CategoryCoversManager = () => {
         delete next[category];
         return next;
       });
-      toast({ title: `Portada de "${category}" eliminada` });
+      toast({ title: `Portada personalizada de "${category}" eliminada` });
     } catch (err) {
       console.error(err);
     }
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
-      <h2 className="font-display text-xl text-foreground mb-1">Portadas de Categorías</h2>
+    <div>
       <p className="font-body text-sm text-muted-foreground mb-6">
-        Elegí la foto de portada para cada sección del catálogo en la página de inicio.
+        Estas son las portadas actuales de cada categoría en la página de inicio. Podés cambiarlas o eliminar la personalizada para volver a la imagen automática del primer producto.
       </p>
 
       <input
@@ -105,30 +117,33 @@ const CategoryCoversManager = () => {
         onChange={handleFileChange}
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {CATEGORIES.map((cat) => {
-          const coverUrl = covers[cat];
+          const customCover = covers[cat];
+          const fallbackImg = fallbacks[cat];
+          const displayImg = customCover || fallbackImg;
           const isUploading = uploading === cat;
 
           return (
-            <div key={cat} className="border border-border rounded-lg overflow-hidden">
-              <div className="relative h-36 bg-muted flex items-center justify-center">
-                {coverUrl ? (
-                  <>
-                    <img src={coverUrl} alt={cat} className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => removeCover(cat)}
-                      className="absolute top-2 right-2 p-1 bg-black/60 rounded-full hover:bg-black/80 transition-colors"
-                      title="Eliminar portada"
-                    >
-                      <X className="w-3.5 h-3.5 text-white" />
-                    </button>
-                  </>
+            <div key={cat} className="border border-border rounded-lg overflow-hidden bg-card">
+              <div className="relative h-44 bg-muted flex items-center justify-center">
+                {displayImg ? (
+                  <img src={displayImg} alt={cat} className="w-full h-full object-cover" />
                 ) : (
                   <div className="text-muted-foreground/40 flex flex-col items-center gap-1">
-                    <ImageIcon className="w-8 h-8" />
-                    <span className="text-xs font-body">Sin portada</span>
+                    <ImageIcon className="w-10 h-10" />
+                    <span className="text-xs font-body">Sin imagen</span>
                   </div>
+                )}
+                {customCover && (
+                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary/80 text-primary-foreground text-[10px] font-body font-bold uppercase tracking-wider rounded">
+                    Personalizada
+                  </span>
+                )}
+                {!customCover && fallbackImg && (
+                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-muted-foreground/60 text-white text-[10px] font-body font-bold uppercase tracking-wider rounded">
+                    Automática
+                  </span>
                 )}
                 {isUploading && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -138,14 +153,25 @@ const CategoryCoversManager = () => {
               </div>
               <div className="p-3 flex items-center justify-between">
                 <span className="font-body font-semibold text-sm text-foreground">{cat}</span>
-                <button
-                  onClick={() => handleFileSelect(cat)}
-                  disabled={isUploading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-body font-bold uppercase tracking-wider border border-border text-muted-foreground hover:text-primary hover:border-primary rounded-md transition-colors disabled:opacity-50"
-                >
-                  <Upload className="w-3 h-3" />
-                  {coverUrl ? "Cambiar" : "Subir"}
-                </button>
+                <div className="flex items-center gap-2">
+                  {customCover && (
+                    <button
+                      onClick={() => removeCover(cat)}
+                      className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-body font-bold uppercase tracking-wider border border-border text-muted-foreground hover:text-destructive hover:border-destructive rounded-md transition-colors"
+                      title="Eliminar portada personalizada"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleFileSelect(cat)}
+                    disabled={isUploading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-body font-bold uppercase tracking-wider border border-border text-muted-foreground hover:text-primary hover:border-primary rounded-md transition-colors disabled:opacity-50"
+                  >
+                    <Upload className="w-3 h-3" />
+                    {customCover ? "Cambiar" : "Subir"}
+                  </button>
+                </div>
               </div>
             </div>
           );

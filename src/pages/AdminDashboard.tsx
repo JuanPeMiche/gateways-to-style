@@ -258,7 +258,7 @@ const AdminDashboard = () => {
 
         {/* Category tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {["Todos", ...CATEGORIES].map((cat) => (
+          {["Todos", ...CATEGORIES, "Portadas"].map((cat) => (
             <button
               key={cat}
               onClick={() => setFilter(cat)}
@@ -273,8 +273,10 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Product list */}
-        {filtered.length === 0 ? (
+        {/* Content area */}
+        {filter === "Portadas" ? (
+          <CategoryCoversManager />
+        ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground font-body">
             <ImageIcon className="w-10 h-10 mx-auto mb-3 opacity-40" />
             <p>No hay productos en esta categoría</p>
@@ -348,11 +350,6 @@ const AdminDashboard = () => {
             </table>
           </div>
         )}
-
-        {/* Category covers */}
-        <div className="mt-12">
-          <CategoryCoversManager />
-        </div>
       </div>
 
       {/* Add/Edit modal */}
