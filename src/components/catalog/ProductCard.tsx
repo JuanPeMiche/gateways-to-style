@@ -46,6 +46,7 @@ const ProductCard = memo(({ item, searchQuery }: ProductCardProps) => {
 
   return (
     <div
+      style={{ contentVisibility: "auto", containIntrinsicSize: "0 320px" }}
       className="group bg-card border border-border rounded-lg overflow-hidden transition-all duration-300 hover:glow-border-intense hover:scale-[1.02]"
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
