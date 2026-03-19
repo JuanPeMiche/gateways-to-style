@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      category_covers: {
+        Row: {
+          category: string
+          id: string
+          image_url: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          id?: string
+          image_url: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          id?: string
+          image_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string
