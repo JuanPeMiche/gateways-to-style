@@ -258,7 +258,7 @@ const AdminDashboard = () => {
 
         {/* Category tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {["Todos", ...CATEGORIES].map((cat) => (
+          {["Todos", ...CATEGORIES, "Portadas"].map((cat) => (
             <button
               key={cat}
               onClick={() => setFilter(cat)}
