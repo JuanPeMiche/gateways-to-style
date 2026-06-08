@@ -194,6 +194,18 @@ const Catalogo = () => {
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
+        ) : loadError ? (
+          <div className="text-center py-20">
+            <p className="font-body text-muted-foreground text-lg mb-4">
+              No pudimos conectar con el servidor.
+            </p>
+            <button
+              onClick={loadProducts}
+              className="px-6 py-2 bg-primary text-primary-foreground font-body font-bold text-sm uppercase tracking-wider rounded-full hover:bg-primary/80 transition-all"
+            >
+              Reintentar
+            </button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <SearchX className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
