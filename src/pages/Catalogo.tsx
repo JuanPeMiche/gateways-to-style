@@ -21,6 +21,7 @@ const Catalogo = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
