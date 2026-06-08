@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Shirt, ScrollText, Monitor, Frame, Package, Gift } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
 import { supabase } from "@/integrations/supabase/client";
+import { retryQuery } from "@/lib/retryQuery";
 
 const categoryMeta = [
   {
