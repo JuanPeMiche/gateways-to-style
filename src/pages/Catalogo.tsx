@@ -31,22 +31,30 @@ const Catalogo = () => {
     return () => clearTimeout(t);
   }, [search]);
 
-  // Load ALL published products once
-  useEffect(() => {
-    const load = async () => {
-      const { data, error } = await supabase
+  // Load ALL published products once (with retry on transient backend errors)
+  const loadProducts = useCallback(async () => {
+    setLoadError(false);
+    setInitialLoad(true);
+    const { data, error } = await retryQuery<Product[]>(() =>
+      supabase
         .from("products")
         .select("*")
         .eq("visible", true)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }) as any
+    );
 
-      if (!error && data) {
-        setAllProducts(data as Product[]);
-      }
-      setInitialLoad(false);
-    };
-    load();
+    if (error) {
+      setLoadError(true);
+      toast.error("No pudimos conectar con el servidor. Reintentá en unos segundos.");
+    } else if (data) {
+      setAllProducts(data as Product[]);
+    }
+    setInitialLoad(false);
   }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   // O(1) category grouping
   const categoryMap = useMemo(() => {
