@@ -64,11 +64,14 @@ const ProductsSection = () => {
         .filter((name) => !map[name]);
 
       if (missingCategories.length > 0) {
-        const { data } = await supabase
-          .from("products")
-          .select("category, images")
-          .eq("visible", true)
-          .order("created_at", { ascending: false });
+        const { data } = await retryQuery<{ category: string; images: string[] }[]>(
+          () =>
+            supabase
+              .from("products")
+              .select("category, images")
+              .eq("visible", true)
+              .order("created_at", { ascending: false }) as any
+        );
 
         if (data) {
           for (const row of data) {
