@@ -6,6 +6,8 @@ import ProductCard from "@/components/catalog/ProductCard";
 import ScrollToTop from "@/components/catalog/ScrollToTop";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, type Product } from "@/lib/productStore";
+import { retryQuery } from "@/lib/retryQuery";
+import { toast } from "sonner";
 
 const allFilters = ["Todos", ...CATEGORIES] as const;
 const BATCH_SIZE = 24;
