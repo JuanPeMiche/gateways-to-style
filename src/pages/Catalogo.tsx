@@ -6,6 +6,8 @@ import ProductCard from "@/components/catalog/ProductCard";
 import ScrollToTop from "@/components/catalog/ScrollToTop";
 import { supabase } from "@/integrations/supabase/client";
 import { CATEGORIES, type Product } from "@/lib/productStore";
+import { retryQuery } from "@/lib/retryQuery";
+import { toast } from "sonner";
 
 const allFilters = ["Todos", ...CATEGORIES] as const;
 const BATCH_SIZE = 24;
@@ -19,6 +21,7 @@ const Catalogo = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -28,22 +31,30 @@ const Catalogo = () => {
     return () => clearTimeout(t);
   }, [search]);
 
-  // Load ALL published products once
-  useEffect(() => {
-    const load = async () => {
-      const { data, error } = await supabase
+  // Load ALL published products once (with retry on transient backend errors)
+  const loadProducts = useCallback(async () => {
+    setLoadError(false);
+    setInitialLoad(true);
+    const { data, error } = await retryQuery<Product[]>(() =>
+      supabase
         .from("products")
         .select("*")
         .eq("visible", true)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }) as any
+    );
 
-      if (!error && data) {
-        setAllProducts(data as Product[]);
-      }
-      setInitialLoad(false);
-    };
-    load();
+    if (error) {
+      setLoadError(true);
+      toast.error("No pudimos conectar con el servidor. Reintentá en unos segundos.");
+    } else if (data) {
+      setAllProducts(data as Product[]);
+    }
+    setInitialLoad(false);
   }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   // O(1) category grouping
   const categoryMap = useMemo(() => {
@@ -182,6 +193,18 @@ const Catalogo = () => {
         {initialLoad ? (
           <div className="flex justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : loadError ? (
+          <div className="text-center py-20">
+            <p className="font-body text-muted-foreground text-lg mb-4">
+              No pudimos conectar con el servidor.
+            </p>
+            <button
+              onClick={loadProducts}
+              className="px-6 py-2 bg-primary text-primary-foreground font-body font-bold text-sm uppercase tracking-wider rounded-full hover:bg-primary/80 transition-all"
+            >
+              Reintentar
+            </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">

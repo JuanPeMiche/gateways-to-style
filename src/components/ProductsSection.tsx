@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Shirt, ScrollText, Monitor, Frame, Package, Gift } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
 import { supabase } from "@/integrations/supabase/client";
+import { retryQuery } from "@/lib/retryQuery";
 
 const categoryMeta = [
   {
@@ -42,10 +43,13 @@ const ProductsSection = () => {
 
   useEffect(() => {
     const fetchImages = async () => {
-      // First try custom covers from category_covers table
-      const { data: coverData } = await supabase
-        .from("category_covers")
-        .select("category, image_url");
+      // First try custom covers from category_covers table (with retry)
+      const { data: coverData } = await retryQuery<{ category: string; image_url: string }[]>(
+        () =>
+          supabase
+            .from("category_covers")
+            .select("category, image_url") as any
+      );
 
       const map: Record<string, string> = {};
       if (coverData) {
@@ -60,11 +64,14 @@ const ProductsSection = () => {
         .filter((name) => !map[name]);
 
       if (missingCategories.length > 0) {
-        const { data } = await supabase
-          .from("products")
-          .select("category, images")
-          .eq("visible", true)
-          .order("created_at", { ascending: false });
+        const { data } = await retryQuery<{ category: string; images: string[] }[]>(
+          () =>
+            supabase
+              .from("products")
+              .select("category, images")
+              .eq("visible", true)
+              .order("created_at", { ascending: false }) as any
+        );
 
         if (data) {
           for (const row of data) {
