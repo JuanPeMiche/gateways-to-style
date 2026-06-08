@@ -43,10 +43,13 @@ const ProductsSection = () => {
 
   useEffect(() => {
     const fetchImages = async () => {
-      // First try custom covers from category_covers table
-      const { data: coverData } = await supabase
-        .from("category_covers")
-        .select("category, image_url");
+      // First try custom covers from category_covers table (with retry)
+      const { data: coverData } = await retryQuery<{ category: string; image_url: string }[]>(
+        () =>
+          supabase
+            .from("category_covers")
+            .select("category, image_url") as any
+      );
 
       const map: Record<string, string> = {};
       if (coverData) {
