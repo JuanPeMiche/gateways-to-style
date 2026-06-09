@@ -105,7 +105,7 @@ const ProductsSection = () => {
         </ScrollReveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categoryMeta.map((product, i) => {
+          {visibleCategories.map((product, i) => {
             const img = images[product.name];
             return (
               <ScrollReveal key={product.name} delay={i * 100}>
