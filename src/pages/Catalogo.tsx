@@ -75,17 +75,20 @@ const Catalogo = () => {
     return c;
   }, [categoryMap]);
 
-  // Filtered products — memoized
+  // Filtered products — when searching, ignore category filter (search across all)
   const filtered = useMemo(() => {
-    const base = categoryMap[active] || allProducts;
-    if (!debouncedSearch.trim()) return base;
-    const q = debouncedSearch.toLowerCase();
-    return base.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
-    );
+    const q = debouncedSearch.trim().toLowerCase();
+    if (q) {
+      return allProducts.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q)
+      );
+    }
+    return categoryMap[active] || allProducts;
   }, [categoryMap, active, debouncedSearch, allProducts]);
+
 
   // Reset visible count when filter/search changes
   useEffect(() => {
@@ -170,7 +173,10 @@ const Catalogo = () => {
         <div className="flex flex-wrap justify-center gap-3 mb-10">
           {allFilters.map((cat) => {
             const count = counts[cat] ?? 0;
+            // Hide empty categories (always show "Todos")
+            if (cat !== "Todos" && count === 0) return null;
             return (
+
               <button
                 key={cat}
                 onClick={() => handleCategoryChange(cat)}

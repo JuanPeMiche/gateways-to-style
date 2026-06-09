@@ -40,10 +40,11 @@ const categoryMeta = [
 
 const ProductsSection = () => {
   const [images, setImages] = useState<Record<string, string>>({});
+  const [availableCats, setAvailableCats] = useState<Set<string>>(new Set());
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const fetchImages = async () => {
-      // First try custom covers from category_covers table (with retry)
       const { data: coverData } = await retryQuery<{ category: string; image_url: string }[]>(
         () =>
           supabase
@@ -58,34 +59,38 @@ const ProductsSection = () => {
         }
       }
 
-      // Fill remaining categories with first product image as fallback
-      const missingCategories = categoryMeta
-        .map((c) => c.name)
-        .filter((name) => !map[name]);
+      // Fetch published products to determine which categories have stock + fallback images
+      const { data } = await retryQuery<{ category: string; images: string[] }[]>(
+        () =>
+          supabase
+            .from("products")
+            .select("category, images")
+            .eq("visible", true)
+            .order("created_at", { ascending: false }) as any
+      );
 
-      if (missingCategories.length > 0) {
-        const { data } = await retryQuery<{ category: string; images: string[] }[]>(
-          () =>
-            supabase
-              .from("products")
-              .select("category, images")
-              .eq("visible", true)
-              .order("created_at", { ascending: false }) as any
-        );
-
-        if (data) {
-          for (const row of data) {
-            if (missingCategories.includes(row.category) && !map[row.category] && row.images?.length > 0) {
-              map[row.category] = row.images[0];
-            }
+      const cats = new Set<string>();
+      if (data) {
+        for (const row of data) {
+          cats.add(row.category);
+          if (!map[row.category] && row.images?.length > 0) {
+            map[row.category] = row.images[0];
           }
         }
       }
 
       setImages(map);
+      setAvailableCats(cats);
+      setLoaded(true);
     };
     fetchImages();
   }, []);
+
+  // Only show categories that have at least one published product
+  const visibleCategories = loaded
+    ? categoryMeta.filter((c) => availableCats.has(c.name))
+    : categoryMeta;
+
 
   return (
     <section id="productos" className="py-24 bg-background">
@@ -100,7 +105,7 @@ const ProductsSection = () => {
         </ScrollReveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categoryMeta.map((product, i) => {
+          {visibleCategories.map((product, i) => {
             const img = images[product.name];
             return (
               <ScrollReveal key={product.name} delay={i * 100}>
