@@ -173,7 +173,10 @@ const Catalogo = () => {
         <div className="flex flex-wrap justify-center gap-3 mb-10">
           {allFilters.map((cat) => {
             const count = counts[cat] ?? 0;
+            // Hide empty categories (always show "Todos")
+            if (cat !== "Todos" && count === 0) return null;
             return (
+
               <button
                 key={cat}
                 onClick={() => handleCategoryChange(cat)}
