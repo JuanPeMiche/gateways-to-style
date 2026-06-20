@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Shirt, ScrollText, Monitor, Frame, Package, Gift } from "lucide-react";
+import { Shirt, ScrollText, Monitor, Frame, Package, Gift, ShoppingBag } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
 import { supabase } from "@/integrations/supabase/client";
 import { retryQuery } from "@/lib/retryQuery";
@@ -10,6 +10,11 @@ const categoryMeta = [
     name: "Remeras",
     description: "Diseños anime, gaming y arte urbano impresos en remeras de alta calidad.",
     icon: Shirt,
+  },
+  {
+    name: "Canguros",
+    description: "Canguros con diseños anime, gaming y arte urbano para abrigarte con estilo.",
+    icon: ShoppingBag,
   },
   {
     name: "Scrolls",
