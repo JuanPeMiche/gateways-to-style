@@ -13,6 +13,7 @@ export interface Product {
 
 export const CATEGORIES = [
   "Remeras",
+  "Canguros",
   "Scrolls",
   "Mousepads",
   "Cuadros de Cerámica",
