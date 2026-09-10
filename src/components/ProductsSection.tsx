@@ -4,6 +4,7 @@ import { Shirt, ScrollText, Monitor, Frame, Package, Gift, ShoppingBag } from "l
 import ScrollReveal from "./ScrollReveal";
 import { supabase } from "@/integrations/supabase/client";
 import { retryQuery } from "@/lib/retryQuery";
+import { optimizedImageUrl } from "@/lib/imageUrl";
 
 const categoryMeta = [
   {
@@ -49,46 +50,63 @@ const ProductsSection = () => {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchImages = async () => {
-      const { data: coverData } = await retryQuery<{ category: string; image_url: string }[]>(
-        () =>
+      const map: Record<string, string> = {};
+      const cats = new Set<string>();
+
+      try {
+        const { data: coverData } = await retryQuery<
+          { category: string; image_url: string }[]
+        >(() =>
           supabase
             .from("category_covers")
             .select("category, image_url") as any
-      );
+        );
 
-      const map: Record<string, string> = {};
-      if (coverData) {
-        for (const row of coverData) {
-          map[row.category] = row.image_url;
+        if (coverData) {
+          for (const row of coverData) {
+            map[row.category] = row.image_url;
+          }
         }
-      }
 
-      // Fetch published products to determine which categories have stock + fallback images
-      const { data } = await retryQuery<{ category: string; images: string[] }[]>(
-        () =>
+        // Only the columns we need — avoids pulling every product field just to
+        // decide which categories have stock.
+        const { data } = await retryQuery<
+          { category: string; images: string[] }[]
+        >(() =>
           supabase
             .from("products")
             .select("category, images")
             .eq("visible", true)
             .order("created_at", { ascending: false }) as any
-      );
+        );
 
-      const cats = new Set<string>();
-      if (data) {
-        for (const row of data) {
-          cats.add(row.category);
-          if (!map[row.category] && row.images?.length > 0) {
-            map[row.category] = row.images[0];
+        if (data) {
+          for (const row of data) {
+            cats.add(row.category);
+            if (!map[row.category] && row.images?.length > 0) {
+              map[row.category] = row.images[0];
+            }
           }
         }
+      } catch {
+        // Leave map/cats as-is; the finally block still resolves the section so
+        // it never stays stuck in its pre-load state.
+      } finally {
+        if (!cancelled) {
+          setImages(map);
+          setAvailableCats(cats);
+          setLoaded(true);
+        }
       }
-
-      setImages(map);
-      setAvailableCats(cats);
-      setLoaded(true);
     };
+
     fetchImages();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Only show categories that have at least one published product
@@ -111,7 +129,7 @@ const ProductsSection = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {visibleCategories.map((product, i) => {
-            const img = images[product.name];
+            const img = optimizedImageUrl(images[product.name], "card");
             return (
               <ScrollReveal key={product.name} delay={i * 100}>
                 <Link

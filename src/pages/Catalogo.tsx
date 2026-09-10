@@ -35,21 +35,29 @@ const Catalogo = () => {
   const loadProducts = useCallback(async () => {
     setLoadError(false);
     setInitialLoad(true);
-    const { data, error } = await retryQuery<Product[]>(() =>
-      supabase
-        .from("products")
-        .select("*")
-        .eq("visible", true)
-        .order("created_at", { ascending: false }) as any
-    );
+    try {
+      const { data, error } = await retryQuery(() =>
+        supabase
+          .from("products")
+          .select("*")
+          .eq("visible", true)
+          .order("created_at", { ascending: false })
+      );
 
-    if (error) {
+      if (error) {
+        setLoadError(true);
+        toast.error("No pudimos conectar con el servidor. Reintentá en unos segundos.");
+      } else if (data) {
+        setAllProducts(data as Product[]);
+      }
+    } catch {
+      // Defensive: retryQuery already normalises errors, but the spinner must
+      // never outlive this call.
       setLoadError(true);
       toast.error("No pudimos conectar con el servidor. Reintentá en unos segundos.");
-    } else if (data) {
-      setAllProducts(data as Product[]);
+    } finally {
+      setInitialLoad(false);
     }
-    setInitialLoad(false);
   }, []);
 
   useEffect(() => {

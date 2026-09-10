@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { compressImage } from "@/lib/imageCompressor";
 
 export interface Product {
   id: string;
@@ -26,13 +27,36 @@ export type ProductCategory = (typeof CATEGORIES)[number];
 const BUCKET = "product-images";
 const PAGE_SIZE = 18;
 
-// Upload a file to storage, return public URL
+// Anything above this is refused outright: the catalog was previously filled
+// with 4-30MB originals, which is what made it load so slowly.
+const MAX_UPLOAD_BYTES = 600 * 1024;
+
+// Upload a file to storage, return public URL.
+//
+// Compression is enforced here rather than trusted to each caller, so no future
+// upload path can bypass it and reintroduce multi-megabyte originals.
 export async function uploadImage(file: File): Promise<string> {
-  const ext = file.name.split(".").pop() || "jpg";
+  let toUpload = file;
+
+  if (toUpload.size > MAX_UPLOAD_BYTES) {
+    const { file: compressed } = await compressImage(toUpload);
+    toUpload = compressed;
+  }
+
+  if (toUpload.size > MAX_UPLOAD_BYTES) {
+    throw new Error(
+      `La imagen pesa ${Math.round(toUpload.size / 1024)}KB y no se pudo comprimir por debajo de ${Math.round(
+        MAX_UPLOAD_BYTES / 1024
+      )}KB. Reducila antes de subirla.`
+    );
+  }
+
+  const ext = toUpload.name.split(".").pop() || "jpg";
   const path = `${crypto.randomUUID()}.${ext}`;
 
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
-    cacheControl: "3600",
+  const { error } = await supabase.storage.from(BUCKET).upload(path, toUpload, {
+    // Long-lived cache: filenames are UUIDs, so content never changes in place.
+    cacheControl: "31536000",
     upsert: false,
   });
 

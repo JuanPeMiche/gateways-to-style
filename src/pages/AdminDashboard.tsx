@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Pencil, Trash2, ExternalLink, LogOut, Eye, EyeOff,
-  Upload, X, Image as ImageIcon, UploadCloud,
+  Upload, X, Image as ImageIcon, UploadCloud, Loader2,
 } from "lucide-react";
 import BulkUploadDialog from "@/components/BulkUploadDialog";
 import CategoryCoversManager from "@/components/CategoryCoversManager";
-import { isAuthenticated, logout } from "@/lib/adminAuth";
+import { isAuthenticated, logout, onAuthChange } from "@/lib/adminAuth";
 import {
   getProducts, addProduct, updateProduct, deleteProduct, uploadImage,
   CATEGORIES, type Product, type ProductCategory,
@@ -41,12 +41,30 @@ const AdminDashboard = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
   useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate("/admin", { replace: true });
-      return;
-    }
-    getProducts().then(setProducts).catch(console.error);
+    let active = true;
+
+    isAuthenticated().then((authed) => {
+      if (!active) return;
+      if (!authed) {
+        navigate("/admin", { replace: true });
+        return;
+      }
+      setCheckingAuth(false);
+      getProducts().then(setProducts).catch(console.error);
+    });
+
+    // Bounce back to the login screen if the session expires or is signed out.
+    const unsubscribe = onAuthChange((authed) => {
+      if (!authed) navigate("/admin", { replace: true });
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [navigate]);
 
   const reload = useCallback(() => {
@@ -55,8 +73,8 @@ const AdminDashboard = () => {
 
   const filtered = filter === "Todos" ? products : products.filter((p) => p.category === filter);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/", { replace: true });
   };
 
@@ -205,6 +223,15 @@ const AdminDashboard = () => {
       console.error(err);
     }
   };
+
+  // Avoid flashing the admin UI before the session is confirmed.
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

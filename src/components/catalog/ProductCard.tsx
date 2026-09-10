@@ -3,6 +3,7 @@ import { memo, useState, useEffect, useCallback } from "react";
 import { Settings } from "lucide-react";
 import LazyImage from "./LazyImage";
 import type { Product } from "@/lib/productStore";
+import { optimizedImageUrl } from "@/lib/imageUrl";
 
 interface ProductCardProps {
   item: Product;
@@ -42,7 +43,8 @@ const ProductCard = memo(({ item, searchQuery }: ProductCardProps) => {
   }, []);
   const handleLeave = useCallback(() => setHovered(false), []);
 
-  const currentImg = item.images[hovered ? imgIdx : 0];
+  const rawImg = item.images[hovered ? imgIdx : 0];
+  const currentImg = optimizedImageUrl(rawImg, "thumb");
 
   return (
     <div
@@ -56,6 +58,7 @@ const ProductCard = memo(({ item, searchQuery }: ProductCardProps) => {
           <>
             <LazyImage
               src={currentImg}
+              fallbackSrc={rawImg}
               alt={item.name}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
