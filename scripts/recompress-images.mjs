@@ -78,7 +78,9 @@ for (const product of products ?? []) {
     const original = Buffer.from(await blob.arrayBuffer());
     if (original.byteLength <= MAX_BYTES) continue;
 
-    const optimized = await sharp(original)
+    // limitInputPixels: some legacy uploads exceed sharp's default 268MP guard,
+    // and those are exactly the ones Supabase also refuses to transform.
+    const optimized = await sharp(original, { limitInputPixels: false })
       .rotate()
       .resize({ width: TARGET_WIDTH, withoutEnlargement: true })
       .webp({ quality: 78 })

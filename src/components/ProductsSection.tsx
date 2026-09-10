@@ -4,7 +4,7 @@ import { Shirt, ScrollText, Monitor, Frame, Package, Gift, ShoppingBag } from "l
 import ScrollReveal from "./ScrollReveal";
 import { supabase } from "@/integrations/supabase/client";
 import { retryQuery } from "@/lib/retryQuery";
-import { optimizedImageUrl } from "@/lib/imageUrl";
+import CoverImage from "./catalog/CoverImage";
 
 const categoryMeta = [
   {
@@ -129,7 +129,7 @@ const ProductsSection = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {visibleCategories.map((product, i) => {
-            const img = optimizedImageUrl(images[product.name], "card");
+            const img = images[product.name];
             return (
               <ScrollReveal key={product.name} delay={i * 100}>
                 <Link
@@ -146,12 +146,14 @@ const ProductsSection = () => {
                   </div>
                   <div className="flex-1 min-h-[220px] overflow-hidden bg-muted flex items-center justify-center relative">
                     {img ? (
-                      <img
+                      <CoverImage
                         src={img}
                         alt={product.name}
+                        variant="card"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                        decoding="async"
+                        fallback={
+                          <product.icon className="w-16 h-16 text-muted-foreground/40 group-hover:text-primary transition-colors duration-300" />
+                        }
                       />
                     ) : (
                       <product.icon className="w-16 h-16 text-muted-foreground/40 group-hover:text-primary transition-colors duration-300" />
