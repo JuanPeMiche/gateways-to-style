@@ -8,6 +8,11 @@
  * /render/image/ endpoint makes Supabase resize + re-encode (WebP when the
  * browser sends an Accept header for it), taking a 3.4MB PNG down to ~25KB —
  * with no need to re-upload anything.
+ *
+ * Image transformations are a paid Supabase feature. On the Free plan the
+ * render endpoint doesn't exist (the catalog was re-encoded to ~100KB WebP
+ * during the migration off Lovable Cloud instead), so the rewrite only happens
+ * when VITE_SUPABASE_IMAGE_TRANSFORMS=true.
  */
 
 const OBJECT_PATH = "/storage/v1/object/public/";
@@ -33,6 +38,7 @@ export function optimizedImageUrl(
   variant: ImageVariant = "thumb"
 ): string {
   if (!url) return "";
+  if (import.meta.env.VITE_SUPABASE_IMAGE_TRANSFORMS !== "true") return url;
   if (!url.includes(OBJECT_PATH)) return url;
 
   const { width, quality } = VARIANTS[variant];

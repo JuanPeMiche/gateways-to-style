@@ -22,7 +22,7 @@ import sharp from "sharp";
 import { randomUUID } from "node:crypto";
 
 const SUPABASE_URL =
-  process.env.SUPABASE_URL || "https://vqippalsvliwibvpjlne.supabase.co";
+  process.env.SUPABASE_URL || "https://nfvcfvzhgtkmztbqczyw.supabase.co";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const BUCKET = "product-images";
 const MAX_BYTES = 600 * 1024;

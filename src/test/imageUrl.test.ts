@@ -1,10 +1,18 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { optimizedImageUrl } from "@/lib/imageUrl";
 
 const OBJECT =
   "https://x.supabase.co/storage/v1/object/public/product-images/abc.png";
 
 describe("optimizedImageUrl", () => {
+  beforeEach(() => {
+    vi.stubEnv("VITE_SUPABASE_IMAGE_TRANSFORMS", "true");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("rewrites Supabase object URLs to the render endpoint", () => {
     const out = optimizedImageUrl(OBJECT, "thumb");
     expect(out).toContain("/storage/v1/render/image/public/");
@@ -32,5 +40,12 @@ describe("optimizedImageUrl", () => {
   it("appends params with & when the URL already has a query", () => {
     const out = optimizedImageUrl(`${OBJECT}?token=1`);
     expect(out).toContain("?token=1&width=");
+  });
+
+  it("returns the raw object URL when transformations are disabled (Free plan)", () => {
+    vi.stubEnv("VITE_SUPABASE_IMAGE_TRANSFORMS", "false");
+    expect(optimizedImageUrl(OBJECT, "thumb")).toBe(OBJECT);
+    vi.stubEnv("VITE_SUPABASE_IMAGE_TRANSFORMS", "");
+    expect(optimizedImageUrl(OBJECT, "card")).toBe(OBJECT);
   });
 });

@@ -27,3 +27,6 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+
+# Backups locales de la migración desde Lovable
+migration-backup/
